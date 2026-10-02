@@ -31,6 +31,11 @@ export const metadata: Metadata = {
     "Handmade with Love",
   ],
   authors: [{ name: "Shreya Crafts Nest" }],
+  icons: {
+    icon: "/logo-emblem.png",
+    shortcut: "/logo-emblem.png",
+    apple: "/logo-emblem.png",
+  },
 };
 
 export const viewport: Viewport = {

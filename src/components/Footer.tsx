@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Heart, MessageCircle, ShieldCheck, Sparkles, MapPin } from "lucide-react";
+import Image from "next/image";
+import { MessageCircle, ShieldCheck, Sparkles, MapPin } from "lucide-react";
 
 export function Footer() {
   return (
@@ -9,11 +10,16 @@ export function Footer() {
           {/* Brand & Story */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                <Heart className="w-4 h-4 fill-amber-400/30 text-amber-400" />
+              <div className="relative w-11 h-11 rounded-full overflow-hidden border border-amber-500/40 bg-[#FAF7F2] flex-shrink-0">
+                <Image
+                  src="/logo-emblem.png"
+                  alt="Shreya Craft Nest Logo"
+                  fill
+                  className="object-cover"
+                />
               </div>
               <span className="font-serif text-2xl font-bold text-white tracking-wide">
-                Shreya Crafts Nest
+                Shreya Craft Nest
               </span>
             </div>
             <p className="text-sm text-stone-400 leading-relaxed max-w-md">
