@@ -5,11 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
-import { ShoppingCart, ChevronDown, Check } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { ShoppingCart, ChevronDown, Check, LogOut, User } from "lucide-react";
 
 export function Navbar() {
   const { totalItems } = useCart();
   const { language, setLanguage, t } = useLanguage();
+  const { user, isLoggedIn, logout } = useAuth();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
@@ -169,28 +171,76 @@ export function Navbar() {
             onMouseEnter={() => setShowAccountDropdown(true)}
             onMouseLeave={() => setShowAccountDropdown(false)}
           >
-            <button
-              type="button"
-              onClick={() => setShowAccountDropdown((prev) => !prev)}
-              className="px-2.5 py-1.5 rounded-lg border border-stone-200/90 bg-white/80 hover:bg-white text-stone-800 hover:border-amber-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col leading-tight text-left"
-              aria-expanded={showAccountDropdown}
-            >
-              <span className="text-[10px] text-stone-500 font-medium">
-                {t("nav.greeting")}
-              </span>
-              <div className="flex items-center gap-0.5 text-xs font-bold text-stone-900">
-                <span>{t("nav.account")}</span>
-                <ChevronDown className="w-3 h-3 text-stone-500" />
-              </div>
-            </button>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => setShowAccountDropdown((prev) => !prev)}
+                className="px-2.5 py-1.5 rounded-lg border border-stone-200/90 bg-white/80 hover:bg-white text-stone-800 hover:border-amber-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col leading-tight text-left"
+                aria-expanded={showAccountDropdown}
+              >
+                <span className="text-[10px] text-stone-500 font-medium truncate max-w-[110px]">
+                  Hello, {user?.name.split(" ")[0]}
+                </span>
+                <div className="flex items-center gap-0.5 text-xs font-bold text-stone-900">
+                  <span>{t("nav.account")}</span>
+                  <ChevronDown className="w-3 h-3 text-stone-500" />
+                </div>
+              </button>
+            ) : (
+              <Link
+                href="/signin"
+                className="px-2.5 py-1.5 rounded-lg border border-stone-200/90 bg-white/80 hover:bg-white text-stone-800 hover:border-amber-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col leading-tight text-left"
+              >
+                <span className="text-[10px] text-stone-500 font-medium">
+                  Hello, sign in
+                </span>
+                <div className="flex items-center gap-0.5 text-xs font-bold text-stone-900">
+                  <span>{t("nav.account")}</span>
+                  <ChevronDown className="w-3 h-3 text-stone-500" />
+                </div>
+              </Link>
+            )}
 
             {/* Dropdown Menu */}
             {showAccountDropdown && (
-              <div className="absolute right-0 top-12 w-56 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-4 z-50 animate-in fade-in duration-150">
-                <p className="text-xs font-bold text-stone-900 pb-2 border-b border-stone-100">
-                  Your Artisan Nest
-                </p>
-                <div className="py-2 space-y-2 text-xs">
+              <div className="absolute right-0 top-12 w-60 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-4 z-50 animate-in fade-in duration-150">
+                {isLoggedIn && user ? (
+                  <div className="pb-3 mb-2 border-b border-stone-100 flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs border border-amber-200">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-stone-900 truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-[10px] text-stone-500 truncate">
+                        {user.email || user.phone}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center pb-3 mb-2 border-b border-stone-100">
+                    <Link
+                      href="/signin"
+                      onClick={() => setShowAccountDropdown(false)}
+                      className="block w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 text-xs font-bold py-2 rounded-lg border border-[#fcd200] shadow-xs text-center transition-all"
+                    >
+                      Sign in
+                    </Link>
+                    <p className="text-[10px] text-stone-500 mt-2">
+                      New customer?{" "}
+                      <Link
+                        href="/signin"
+                        onClick={() => setShowAccountDropdown(false)}
+                        className="text-amber-800 font-semibold hover:underline"
+                      >
+                        Start here.
+                      </Link>
+                    </p>
+                  </div>
+                )}
+
+                <div className="py-1 space-y-2 text-xs">
                   <Link
                     href="/track-order"
                     onClick={() => setShowAccountDropdown(false)}
@@ -220,6 +270,20 @@ export function Navbar() {
                   >
                     {t("nav.whatsapp")}
                   </a>
+
+                  {isLoggedIn && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        setShowAccountDropdown(false);
+                      }}
+                      className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}
