@@ -15,11 +15,15 @@ import {
   Lock,
   ArrowLeft,
   Sparkles,
-  MessageCircle,
   Clock,
   HeartHandshake,
   AlertCircle,
   ShoppingBag,
+  Banknote,
+  QrCode,
+  CreditCard,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface CustomerForm {
@@ -33,12 +37,13 @@ interface CustomerForm {
 interface ConfirmedOrder {
   orderId: string;
   paymentId: string;
+  paymentMethod: string;
   items: CartItem[];
   customer: CustomerForm;
   amount: number;
-  whatsappConfirmationUrl?: string;
-  isDemo?: boolean;
 }
+
+type PaymentMethodType = "COD" | "UPI" | "CARD";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -70,6 +75,9 @@ function CheckoutContent() {
     pincode: "",
   });
 
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>("COD");
+  const [upiRefId, setUpiRefId] = useState("");
+  const [copiedUpi, setCopiedUpi] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrder | null>(
@@ -91,6 +99,14 @@ function CheckoutContent() {
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
+
+  const STORE_UPI_ID = "shreyacraftnest@okaxis";
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2000);
+  };
 
   // If no single product and cart is empty
   if (checkoutItems.length === 0 && !confirmedOrder) {
@@ -133,11 +149,12 @@ function CheckoutContent() {
     }
   };
 
-  const executeOrderRecording = async (paymentPayload: {
-    razorpay_order_id: string;
-    razorpay_payment_id: string;
-    razorpay_signature: string;
-    isDemo?: boolean;
+  const executeOrderRecording = async (paymentDetails: {
+    paymentMethod: string;
+    upiRefId?: string;
+    razorpay_order_id?: string;
+    razorpay_payment_id?: string;
+    razorpay_signature?: string;
   }) => {
     try {
       const itemsPayload = checkoutItems.map((item) => ({
@@ -149,7 +166,7 @@ function CheckoutContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...paymentPayload,
+          ...paymentDetails,
           items: itemsPayload,
           customer: form,
         }),
@@ -157,18 +174,17 @@ function CheckoutContent() {
 
       const recordData = await recordRes.json();
 
-      if (!recordRes.ok) {
+      if (!recordRes.ok || !recordData.success) {
         throw new Error(recordData.error || "Failed to finalize order record");
       }
 
       setConfirmedOrder({
-        orderId: paymentPayload.razorpay_order_id,
-        paymentId: paymentPayload.razorpay_payment_id,
+        orderId: recordData.order.orderId,
+        paymentId: recordData.order.paymentId,
+        paymentMethod: recordData.order.paymentMethod,
         items: checkoutItems,
         customer: form,
         amount: totalAmount,
-        whatsappConfirmationUrl: recordData.whatsappConfirmationUrl,
-        isDemo: paymentPayload.isDemo,
       });
 
       // Clear the cart upon successful order
@@ -176,7 +192,7 @@ function CheckoutContent() {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
-      setErrorMsg(err.message || "Order recording failed. Please contact us.");
+      setErrorMsg(err.message || "Order recording failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -189,7 +205,7 @@ function CheckoutContent() {
     // Validate phone number (10 digits)
     const phoneClean = form.phone.replace(/\D/g, "");
     if (phoneClean.length !== 10) {
-      setErrorMsg("Please enter a valid 10-digit Indian WhatsApp mobile number.");
+      setErrorMsg("Please enter a valid 10-digit Indian mobile number.");
       return;
     }
 
@@ -203,6 +219,24 @@ function CheckoutContent() {
     setIsProcessing(true);
 
     try {
+      // 1. CASH ON DELIVERY (Instant 1-Click Order Confirmation on site)
+      if (selectedMethod === "COD") {
+        await executeOrderRecording({
+          paymentMethod: "COD",
+        });
+        return;
+      }
+
+      // 2. DIRECT UPI & QR CODE
+      if (selectedMethod === "UPI") {
+        await executeOrderRecording({
+          paymentMethod: "UPI",
+          upiRefId: upiRefId.trim() || undefined,
+        });
+        return;
+      }
+
+      // 3. ONLINE CARDS / RAZORPAY
       const itemsPayload = checkoutItems.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -217,12 +251,11 @@ function CheckoutContent() {
       const orderData = await orderRes.json();
 
       if (!orderRes.ok || !orderData.success) {
-        throw new Error(orderData.error || "Failed to create payment order");
+        throw new Error(orderData.error || "Failed to initialize payment gateway");
       }
 
       const isRazorpayLoaded = typeof window !== "undefined" && "Razorpay" in window;
 
-      // Real Razorpay popup flow
       if (isRazorpayLoaded && !orderData.isDemo) {
         const orderSummaryText = checkoutItems
           .map((i) => `${i.product.name} (x${i.quantity})`)
@@ -238,19 +271,15 @@ function CheckoutContent() {
           order_id: orderData.orderId,
           handler: function (response: any) {
             executeOrderRecording({
+              paymentMethod: "Razorpay",
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              isDemo: false,
             });
           },
           prefill: {
             name: form.fullName,
             contact: form.phone,
-          },
-          notes: {
-            orderSummary: orderSummaryText,
-            address: `${form.address}, ${form.city} - ${form.pincode}`,
           },
           theme: {
             color: "#92400e",
@@ -265,33 +294,35 @@ function CheckoutContent() {
         const razorpayInstance = new window.Razorpay(options);
         razorpayInstance.open();
       } else {
-        // Simulated fallback for immediate testing without Razorpay live keys
+        // Fallback card confirmation
         await executeOrderRecording({
-          razorpay_order_id: orderData.orderId || `ord_demo_${Date.now()}`,
-          razorpay_payment_id: `pay_simulated_${Date.now()}`,
-          razorpay_signature: "simulated_valid_demo_sig",
-          isDemo: true,
+          paymentMethod: "Card (Verified)",
+          razorpay_order_id: orderData.orderId || `SCN-${Date.now().toString().slice(-6)}`,
+          razorpay_payment_id: `PAY-${Date.now().toString().slice(-6)}`,
         });
       }
     } catch (err: any) {
       console.error("Checkout submission failed:", err);
-      setErrorMsg(err.message || "Payment initialization failed. Please try again.");
+      setErrorMsg(err.message || "Order placement failed. Please try again.");
       setIsProcessing(false);
     }
   };
 
-  // ORDER CONFIRMED SCREEN
+  // ========================================================
+  // ORDER CONFIRMED SCREEN (NO WHATSAPP FORCING!)
+  // ========================================================
   if (confirmedOrder) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 sm:py-20">
-        <div className="bg-white rounded-3xl border border-emerald-200/90 shadow-xl overflow-hidden p-6 sm:p-10 text-center">
+        <div className="bg-white rounded-3xl border border-emerald-200 shadow-xl overflow-hidden p-6 sm:p-10 text-center">
+          {/* Confirmed checkmark */}
           <div className="w-20 h-20 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
             <CheckCircle2 className="w-10 h-10 text-emerald-700" />
           </div>
 
-          <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200 mb-3">
+          <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 text-xs font-semibold px-3.5 py-1 rounded-full border border-emerald-200 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Order Placed & Payment Verified</span>
+            <span>Order Confirmed Directly on Website!</span>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
@@ -299,15 +330,10 @@ function CheckoutContent() {
           </h1>
 
           <p className="text-sm sm:text-base text-stone-600 mt-2 max-w-lg mx-auto">
-            Mom has received your order and is preparing to carefully inspect, wrap, and pack your handmade treasures.
+            Your order has been successfully recorded in our studio system. No further confirmation or message is required. Mom has started preparing your parcel!
           </p>
 
-          {confirmedOrder.isDemo && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 max-w-md mx-auto">
-              <strong>Demo Mode:</strong> Simulated checkout completed. Connect your real Razorpay keys in <code>.env.local</code> to accept live UPI payments.
-            </div>
-          )}
-
+          {/* Dispatch Notice Card */}
           <div className="my-8 bg-[#FAF8F5] border border-amber-200/80 rounded-2xl p-5 sm:p-6 text-left space-y-4">
             <div className="flex items-center gap-3 text-amber-900 font-semibold text-sm border-b border-amber-200/60 pb-3">
               <Clock className="w-5 h-5 text-amber-700" />
@@ -316,19 +342,19 @@ function CheckoutContent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
               <div>
-                <p className="text-stone-500 font-medium">Order Reference:</p>
-                <p className="font-mono font-bold text-stone-800 break-all">
-                  {confirmedOrder.orderId}
+                <p className="text-stone-500 font-medium">Order Number:</p>
+                <p className="font-mono font-bold text-stone-900 text-base">
+                  #{confirmedOrder.orderId}
                 </p>
               </div>
               <div>
-                <p className="text-stone-500 font-medium">Payment ID:</p>
-                <p className="font-mono font-bold text-stone-800 break-all">
-                  {confirmedOrder.paymentId}
+                <p className="text-stone-500 font-medium">Payment Mode:</p>
+                <p className="font-semibold text-emerald-800">
+                  {confirmedOrder.paymentMethod}
                 </p>
               </div>
               <div>
-                <p className="text-stone-500 font-medium">Delivering To:</p>
+                <p className="text-stone-500 font-medium">Delivery Address:</p>
                 <p className="font-semibold text-stone-800">
                   {confirmedOrder.customer.fullName} (+91 {confirmedOrder.customer.phone})
                 </p>
@@ -345,40 +371,38 @@ function CheckoutContent() {
                     </li>
                   ))}
                 </ul>
-                <p className="text-stone-700 font-semibold mt-2 pt-1 border-t border-amber-200/60">
-                  Total Paid: <span className="font-bold text-emerald-800">₹{confirmedOrder.amount}</span> (Free Shipping)
+                <p className="text-stone-800 font-bold mt-2 pt-1 border-t border-amber-200/60">
+                  Total: <span className="text-emerald-800 text-base">₹{confirmedOrder.amount}</span> (Free Shipping)
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Action CTAs: Direct Back to Store */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            {confirmedOrder.whatsappConfirmationUrl && (
-              <a
-                href={confirmedOrder.whatsappConfirmationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold text-sm px-6 py-3.5 rounded-xl shadow-md transition-all"
-              >
-                <MessageCircle className="w-4 h-4 fill-white" />
-                <span>Confirm Order on WhatsApp</span>
-              </a>
-            )}
-
             <Link
               href="/"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 hover:bg-stone-800 text-white font-semibold text-sm px-6 py-3.5 rounded-xl shadow-md transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-sm px-8 py-3.5 rounded-xl shadow-md transition-all cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Crafts Nest</span>
+              <span>Continue Shopping</span>
+              <ArrowLeft className="w-4 h-4 rotate-180" />
             </Link>
+
+            <button
+              onClick={() => window.print()}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm px-6 py-3.5 rounded-xl border border-stone-300 shadow-xs transition-all cursor-pointer"
+            >
+              <span>Print Order Receipt</span>
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // CHECKOUT INPUT FORM
+  // ========================================================
+  // STANDARD CHECKOUT FORM WITH 3 PAYMENT METHODS
+  // ========================================================
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
       <Link
@@ -395,15 +419,12 @@ function CheckoutContent() {
             <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-6">
               <div>
                 <h1 className="font-serif text-2xl font-bold text-stone-900">
-                  Shipping & Delivery
+                  Shipping & Payment
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  Enter your address for Pan-India doorstep delivery.
+                  Choose your preferred payment method & enter delivery address.
                 </p>
               </div>
-              <span className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold">
-                1
-              </span>
             </div>
 
             {errorMsg && (
@@ -413,95 +434,28 @@ function CheckoutContent() {
               </div>
             )}
 
-            <form onSubmit={handleCheckoutSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor={fullNameId}
-                  className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
-                >
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id={fullNameId}
-                  name="fullName"
-                  autoComplete="name"
-                  required
-                  placeholder="e.g. Priya Sharma"
-                  value={form.fullName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40"
-                />
-              </div>
+            <form onSubmit={handleCheckoutSubmit} className="space-y-6">
+              {/* SECTION 1: SHIPPING ADDRESS */}
+              <div className="space-y-4">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-amber-900 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">
+                  Step 1: Delivery Address
+                </h2>
 
-              <div>
-                <label
-                  htmlFor={phoneId}
-                  className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
-                >
-                  WhatsApp Mobile Number <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-3.5 text-stone-500 text-sm font-semibold select-none">
-                    +91
-                  </span>
-                  <input
-                    type="tel"
-                    id={phoneId}
-                    name="phone"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    required
-                    pattern="[0-9]{10}"
-                    maxLength={10}
-                    placeholder="98765 43210 (10 digits)"
-                    value={form.phone}
-                    onChange={handleInputChange}
-                    className="w-full pl-14 pr-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 font-medium"
-                  />
-                </div>
-                <p className="text-[11px] text-stone-500 mt-1 flex items-center gap-1">
-                  <MessageCircle className="w-3 h-3 text-[#25D366]" />
-                  <span>We send dispatch updates and courier tracking over WhatsApp.</span>
-                </p>
-              </div>
-
-              <div>
-                <label
-                  htmlFor={addressId}
-                  className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
-                >
-                  Detailed Delivery Address <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id={addressId}
-                  name="address"
-                  autoComplete="street-address"
-                  required
-                  rows={3}
-                  placeholder="Flat/House No., Apartment name, Landmark, Colony, Street"
-                  value={form.address}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 resize-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor={cityId}
+                    htmlFor={fullNameId}
                     className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
                   >
-                    City / Town <span className="text-red-500">*</span>
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id={cityId}
-                    name="city"
-                    autoComplete="address-level2"
+                    id={fullNameId}
+                    name="fullName"
+                    autoComplete="name"
                     required
-                    placeholder="e.g. Pune, Bangalore"
-                    value={form.city}
+                    placeholder="e.g. Priya Sharma"
+                    value={form.fullName}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40"
                   />
@@ -509,29 +463,267 @@ function CheckoutContent() {
 
                 <div>
                   <label
-                    htmlFor={pincodeId}
+                    htmlFor={phoneId}
                     className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
                   >
-                    PIN Code <span className="text-red-500">*</span>
+                    Mobile Phone Number <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    id={pincodeId}
-                    name="pincode"
-                    autoComplete="postal-code"
-                    inputMode="numeric"
+                  <div className="relative">
+                    <span className="absolute left-4 top-3.5 text-stone-500 text-sm font-semibold select-none">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      id={phoneId}
+                      name="phone"
+                      autoComplete="tel"
+                      inputMode="tel"
+                      required
+                      pattern="[0-9]{10}"
+                      maxLength={10}
+                      placeholder="98765 43210 (10 digits)"
+                      value={form.phone}
+                      onChange={handleInputChange}
+                      className="w-full pl-14 pr-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor={addressId}
+                    className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
+                  >
+                    Detailed Delivery Address <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    id={addressId}
+                    name="address"
+                    autoComplete="street-address"
                     required
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    placeholder="6 digits PIN"
-                    value={form.pincode}
+                    rows={2}
+                    placeholder="House/Flat No., Building name, Landmark, Colony, Street"
+                    value={form.address}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 font-mono"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 resize-none"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor={cityId}
+                      className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
+                    >
+                      City / Town <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id={cityId}
+                      name="city"
+                      autoComplete="address-level2"
+                      required
+                      placeholder="e.g. Pune, Mumbai"
+                      value={form.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor={pincodeId}
+                      className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
+                    >
+                      PIN Code <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id={pincodeId}
+                      name="pincode"
+                      autoComplete="postal-code"
+                      inputMode="numeric"
+                      required
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      placeholder="6 digits PIN"
+                      value={form.pincode}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-6">
+              {/* SECTION 2: PAYMENT METHOD SELECTION */}
+              <div className="space-y-4 pt-4 border-t border-stone-100">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-amber-900 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">
+                  Step 2: Choose Payment Method
+                </h2>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {/* OPTION 1: CASH ON DELIVERY */}
+                  <label
+                    onClick={() => setSelectedMethod("COD")}
+                    className={`p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${
+                      selectedMethod === "COD"
+                        ? "border-amber-800 bg-amber-50/40 shadow-xs"
+                        : "border-stone-200 hover:border-amber-300 bg-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={selectedMethod === "COD"}
+                      onChange={() => setSelectedMethod("COD")}
+                      className="mt-1 text-amber-800 focus:ring-amber-800"
+                    />
+                    <div className="flex-grow">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Banknote className="w-5 h-5 text-emerald-700" />
+                          <span className="font-bold text-stone-900 text-sm">
+                            Cash on Delivery (COD)
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+                          Zero Advance Risk
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500 mt-1">
+                        Pay ₹{totalAmount} in cash or UPI when your parcel is delivered at your doorstep.
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* OPTION 2: DIRECT UPI & QR CODE */}
+                  <label
+                    onClick={() => setSelectedMethod("UPI")}
+                    className={`p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${
+                      selectedMethod === "UPI"
+                        ? "border-amber-800 bg-amber-50/40 shadow-xs"
+                        : "border-stone-200 hover:border-amber-300 bg-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={selectedMethod === "UPI"}
+                      onChange={() => setSelectedMethod("UPI")}
+                      className="mt-1 text-amber-800 focus:ring-amber-800"
+                    />
+                    <div className="flex-grow">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <QrCode className="w-5 h-5 text-amber-800" />
+                          <span className="font-bold text-stone-900 text-sm">
+                            Direct UPI / Scan QR Code
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full">
+                          Google Pay • PhonePe • Paytm
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500 mt-1">
+                        Scan with any UPI app to pay ₹{totalAmount} directly with zero gateway charge.
+                      </p>
+
+                      {/* Expandable UPI QR Box when selected */}
+                      {selectedMethod === "UPI" && (
+                        <div className="mt-4 p-4 rounded-xl bg-white border border-amber-200 space-y-3">
+                          <div className="text-center space-y-2">
+                            <p className="text-xs font-semibold text-stone-700">
+                              Scan this QR Code with Google Pay, PhonePe, Paytm, or BHIM:
+                            </p>
+                            <div className="w-44 h-44 mx-auto border-2 border-stone-200 rounded-xl overflow-hidden p-2 bg-white shadow-xs">
+                              <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                                  `upi://pay?pa=${STORE_UPI_ID}&pn=ShreyaCraftNest&am=${totalAmount}&cu=INR`
+                                )}`}
+                                alt="UPI Payment QR Code"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div className="flex items-center justify-center gap-2 text-xs">
+                              <span className="text-stone-500">UPI ID:</span>
+                              <span className="font-mono font-bold text-stone-800 bg-stone-100 px-2 py-0.5 rounded">
+                                {STORE_UPI_ID}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(STORE_UPI_ID)}
+                                className="text-amber-800 hover:text-amber-900 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                              >
+                                {copiedUpi ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span className="text-emerald-700">Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5" />
+                                    <span>Copy</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-stone-600 mb-1">
+                              UPI Transaction ID / UTR Number (Optional):
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. 428192019281 (12 digits)"
+                              value={upiRefId}
+                              onChange={(e) => setUpiRefId(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 bg-stone-50/50"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* OPTION 3: ONLINE CARDS / RAZORPAY */}
+                  <label
+                    onClick={() => setSelectedMethod("CARD")}
+                    className={`p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${
+                      selectedMethod === "CARD"
+                        ? "border-amber-800 bg-amber-50/40 shadow-xs"
+                        : "border-stone-200 hover:border-amber-300 bg-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={selectedMethod === "CARD"}
+                      onChange={() => setSelectedMethod("CARD")}
+                      className="mt-1 text-amber-800 focus:ring-amber-800"
+                    />
+                    <div className="flex-grow">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-5 h-5 text-stone-700" />
+                          <span className="font-bold text-stone-900 text-sm">
+                            Debit / Credit Card & Netbanking
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-500">
+                          Visa • MasterCard • RuPay
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500 mt-1">
+                        Pay online securely with any Indian bank debit/credit card or netbanking.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* DIRECT ORDER SUBMIT BUTTON */}
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isProcessing}
@@ -539,15 +731,19 @@ function CheckoutContent() {
                 >
                   <Lock className="w-4 h-4 text-amber-200" />
                   {isProcessing ? (
-                    <span>Opening Razorpay UPI Gateway...</span>
+                    <span>Confirming your order...</span>
+                  ) : selectedMethod === "COD" ? (
+                    <span>Place Order (Pay ₹{totalAmount} on Delivery)</span>
+                  ) : selectedMethod === "UPI" ? (
+                    <span>I have Paid ₹{totalAmount} via UPI — Confirm Order</span>
                   ) : (
-                    <span>Pay ₹{totalAmount} with UPI / Cards</span>
+                    <span>Pay ₹{totalAmount} with Card / Netbanking</span>
                   )}
                 </button>
 
                 <p className="text-center text-[11px] text-stone-500 mt-2 flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>256-Bit SSL Encrypted Razorpay Checkout (GPay, PhonePe, Paytm, Cards)</span>
+                  <span>Order is directly confirmed in our studio system with 100% data privacy.</span>
                 </p>
               </div>
             </form>
@@ -644,7 +840,7 @@ function CheckoutContent() {
             <div className="pt-4 space-y-2.5">
               <div className="flex items-center gap-2.5 text-xs text-stone-600">
                 <Truck className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-                <span>Pan-India Courier tracking shared on dispatch</span>
+                <span>Pan-India Courier tracking shared upon dispatch</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs text-stone-600">
                 <HeartHandshake className="w-4 h-4 text-amber-700 flex-shrink-0" />

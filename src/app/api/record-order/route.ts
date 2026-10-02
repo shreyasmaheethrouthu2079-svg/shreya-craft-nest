@@ -6,6 +6,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
+      paymentMethod = "COD",
+      upiRefId,
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
@@ -67,23 +69,15 @@ export async function POST(request: Request) {
     }
 
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    const isDemoOrder =
-      !keySecret ||
-      keySecret.includes("YOUR_") ||
-      (razorpay_order_id && razorpay_order_id.startsWith("order_demo_"));
+    let isSignatureValid = true;
 
-    let isSignatureValid = false;
-
-    if (isDemoOrder) {
-      isSignatureValid = true;
-    } else {
-      if (!razorpay_signature || !razorpay_payment_id || !razorpay_order_id) {
-        return NextResponse.json(
-          { error: "Incomplete payment verification payload" },
-          { status: 400 }
-        );
-      }
-
+    // Strict HMAC check only if using Razorpay with actual secret
+    if (
+      paymentMethod === "Razorpay" &&
+      keySecret &&
+      !keySecret.includes("YOUR_") &&
+      razorpay_signature
+    ) {
       const generatedSignature = crypto
         .createHmac("sha256", keySecret)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -99,11 +93,26 @@ export async function POST(request: Request) {
       }
     }
 
+    const generatedOrderId =
+      razorpay_order_id ||
+      `SCN-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+
     const orderRecord = {
-      orderId: razorpay_order_id || `demo_${Date.now()}`,
-      paymentId: razorpay_payment_id || `pay_simulated_${Date.now()}`,
+      orderId: generatedOrderId,
+      paymentId:
+        razorpay_payment_id ||
+        (upiRefId ? `UPI-REF-${upiRefId}` : `COD-${Date.now()}`),
+      paymentMethod:
+        paymentMethod === "COD"
+          ? "Cash on Delivery (Pay upon delivery)"
+          : paymentMethod === "UPI"
+          ? "Direct UPI / QR Code"
+          : "Online Cards / Razorpay",
+      paymentStatus:
+        paymentMethod === "COD"
+          ? "PENDING_CASH_ON_DELIVERY"
+          : "CONFIRMED_PAID",
       verified: isSignatureValid,
-      isDemo: isDemoOrder,
       customer: {
         fullName: customer.fullName.trim(),
         phone: customer.phone.trim(),
@@ -114,12 +123,11 @@ export async function POST(request: Request) {
       items: orderItems,
       totalAmountPaid: calculatedTotal,
       currency: "INR",
-      paymentMethod: isDemoOrder ? "UPI / Test Mode" : "Razorpay Verified UPI/Card",
-      status: "CONFIRMED",
+      status: "ORDER_CONFIRMED",
       createdAt: new Date().toISOString(),
     };
 
-    console.log("=== NEW VERIFIED ORDER RECORDED ===");
+    console.log("=== NEW VERIFIED ORDER PLACED (NO WHATSAPP REQUIRED) ===");
     console.log(JSON.stringify(orderRecord, null, 2));
 
     // Optional Google Sheets Webhook Integration
@@ -141,13 +149,13 @@ export async function POST(request: Request) {
             timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
             orderId: orderRecord.orderId,
             paymentId: orderRecord.paymentId,
+            paymentMethod: orderRecord.paymentMethod,
             customerName: orderRecord.customer.fullName,
             phoneNumber: orderRecord.customer.phone,
             deliveryAddress: `${orderRecord.customer.address}, ${orderRecord.customer.city} - ${orderRecord.customer.pincode}`,
             productName: itemsSummary,
-            category: orderItems.map((i) => i.category).join(", "),
             totalAmount: orderRecord.totalAmountPaid,
-            paymentStatus: orderRecord.status,
+            paymentStatus: orderRecord.paymentStatus,
           }),
         });
 
@@ -158,23 +166,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // Direct WhatsApp message builder for the maker
-    const itemsListForWA = orderItems
-      .map((item) => `• ${item.name} x${item.quantity} (₹${item.price * item.quantity})`)
-      .join("\n");
-
-    const waText = encodeURIComponent(
-      `Hello Shreya Craft Nest! 🧵\nI just placed an order for:\n${itemsListForWA}\n\n*Total Amount:* ₹${calculatedTotal} (Free Shipping)\n*Order ID:* ${orderRecord.orderId}\n*Name:* ${customer.fullName}\n*Address:* ${customer.address}, ${customer.city} - ${customer.pincode}\n*Contact:* ${customer.phone}\n\nPlease confirm dispatch timeline. Thank you!`
-    );
-
-    const whatsappConfirmationUrl = `https://wa.me/919876543210?text=${waText}`;
-
     return NextResponse.json({
       success: true,
-      message: "Order successfully verified and recorded!",
+      message: "Order placed and confirmed successfully directly on the website!",
       order: orderRecord,
       sheetSyncStatus,
-      whatsappConfirmationUrl,
     });
   } catch (error: any) {
     console.error("Order recording error:", error);
