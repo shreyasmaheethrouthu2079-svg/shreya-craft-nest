@@ -218,6 +218,7 @@ function SignInContent() {
               src="/logo-emblem.png"
               alt="Shreya Craft Nest"
               fill
+              sizes="40px"
               className="object-cover"
               priority
             />
