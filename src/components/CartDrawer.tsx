@@ -23,6 +23,7 @@ export function CartDrawer() {
     removeFromCart,
     subtotal,
     totalItems,
+    totalSavings,
   } = useCart();
 
   if (!isOpen) return null;
@@ -180,15 +181,32 @@ export function CartDrawer() {
                 </div>
               </div>
 
-              <Link
-                href="/checkout"
-                onClick={closeCart}
-                className="w-full inline-flex items-center justify-center gap-2.5 bg-amber-800 hover:bg-amber-900 active:scale-[0.99] text-white font-bold text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all"
-              >
-                <span>Proceed to Checkout</span>
-                <span className="font-serif">(₹{subtotal})</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
+              {totalSavings > 0 && (
+                <div className="py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold text-center">
+                  🎉 You will save ₹{totalSavings} on this order
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Link
+                  href="/checkout"
+                  onClick={closeCart}
+                  className="w-full inline-flex items-center justify-center gap-2.5 bg-amber-800 hover:bg-amber-900 active:scale-[0.99] text-white font-bold text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+                >
+                  <span>Proceed to Checkout</span>
+                  <span className="font-serif">(₹{subtotal})</span>
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
+
+                <Link
+                  href="/cart"
+                  onClick={closeCart}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-2xs transition-all text-center"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-stone-500" />
+                  <span>View Detailed Cart & Price Breakdown</span>
+                </Link>
+              </div>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />

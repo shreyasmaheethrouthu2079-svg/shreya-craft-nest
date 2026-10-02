@@ -1,9 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Product } from "@/data/products";
 
 export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface AddedToastData {
   product: Product;
   quantity: number;
 }
@@ -14,12 +19,18 @@ interface CartContextType {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, options?: { openDrawer?: boolean }) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  getItemQuantity: (productId: string) => number;
   totalItems: number;
   subtotal: number;
+  totalOriginalPrice: number;
+  totalSavings: number;
+  lastAddedItem: AddedToastData | null;
+  showAddedToast: boolean;
+  dismissToast: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,6 +39,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<AddedToastData | null>(null);
+  const [showAddedToast, setShowAddedToast] = useState(false);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load cart from localStorage on client mount
   useEffect(() => {
@@ -70,7 +84,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const closeCart = () => setIsOpen(false);
   const toggleCart = () => setIsOpen((prev) => !prev);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
+  const dismissToast = () => {
+    setShowAddedToast(false);
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+  };
+
+  const addToCart = (
+    product: Product,
+    quantity: number = 1,
+    options: { openDrawer?: boolean } = {}
+  ) => {
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex(
         (item) => item.product.id === product.id
@@ -88,8 +114,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Auto open drawer to provide instant visual confirmation
-    setIsOpen(true);
+    // Set Amazon-style "Added to Cart" toast notification
+    setLastAddedItem({ product, quantity });
+    setShowAddedToast(true);
+
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => {
+      setShowAddedToast(false);
+    }, 4500);
+
+    if (options.openDrawer) {
+      setIsOpen(true);
+    }
   };
 
   const removeFromCart = (productId: string) => {
@@ -113,11 +151,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart([]);
   };
 
+  const getItemQuantity = (productId: string): number => {
+    const item = cart.find((i) => i.product.id === productId);
+    return item ? item.quantity : 0;
+  };
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   const subtotal = cart.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
+
+  const totalOriginalPrice = cart.reduce(
+    (sum, item) =>
+      sum + (item.product.originalPrice || item.product.price) * item.quantity,
+    0
+  );
+
+  const totalSavings = Math.max(0, totalOriginalPrice - subtotal);
 
   return (
     <CartContext.Provider
@@ -131,8 +183,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        getItemQuantity,
         totalItems,
         subtotal,
+        totalOriginalPrice,
+        totalSavings,
+        lastAddedItem,
+        showAddedToast,
+        dismissToast,
       }}
     >
       {children}

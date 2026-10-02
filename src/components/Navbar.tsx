@@ -57,16 +57,16 @@ export function Navbar() {
             <span className="hidden sm:inline">Track Order</span>
           </Link>
 
-          {/* Cart Drawer Trigger Button */}
-          <button
-            onClick={toggleCart}
+          {/* Cart Link with Amazon/Flipkart Badge */}
+          <Link
+            href="/cart"
             className="relative inline-flex items-center gap-2 bg-white hover:bg-amber-50/70 border border-stone-300 hover:border-amber-400 text-stone-800 px-3.5 py-2 rounded-full shadow-xs hover:shadow transition-all cursor-pointer group"
             aria-label="View Shopping Cart"
           >
             <div className="relative">
               <ShoppingBag className="w-4 h-4 text-amber-800 group-hover:scale-110 transition-transform" />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2.5 w-4 h-4 rounded-full bg-emerald-700 text-white font-bold text-[10px] flex items-center justify-center shadow-xs">
+                <span className="absolute -top-2 -right-2.5 w-4.5 h-4.5 rounded-full bg-emerald-700 text-white font-bold text-[10px] flex items-center justify-center shadow-xs">
                   {totalItems}
                 </span>
               )}
@@ -74,7 +74,7 @@ export function Navbar() {
             <span className="text-xs sm:text-sm font-semibold text-stone-800">
               Cart
             </span>
-          </button>
+          </Link>
 
           {/* WhatsApp Direct Inquiries */}
           <a

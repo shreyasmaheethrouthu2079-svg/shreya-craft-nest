@@ -3,6 +3,7 @@ import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { CartProvider } from "@/context/CartContext";
 import { CartDrawer } from "@/components/CartDrawer";
+import { AmazonCartToast } from "@/components/AmazonCartToast";
 import "./globals.css";
 
 const serifFont = Playfair_Display({
@@ -65,6 +66,7 @@ export default function RootLayout({
         <CartProvider>
           {children}
           <CartDrawer />
+          <AmazonCartToast />
         </CartProvider>
       </body>
     </html>

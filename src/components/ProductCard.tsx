@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star, CheckCircle2, ArrowRight, Sparkles, ShoppingBag } from "lucide-react";
+import { Star, CheckCircle2, ArrowRight, Sparkles, ShoppingBag, Plus, Minus } from "lucide-react";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 
@@ -11,7 +11,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart();
+  const { addToCart, updateQuantity, getItemQuantity } = useCart();
+  const cartQuantity = getItemQuantity(product.id);
 
   const discountPercent = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
@@ -122,18 +123,43 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => addToCart(product)}
-              className="p-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition-colors shadow-xs cursor-pointer flex items-center justify-center group/btn"
-              title="Add to Shopping Cart"
-              aria-label={`Add ${product.name} to Cart`}
-            >
-              <ShoppingBag className="w-4 h-4 text-amber-800 group-hover/btn:scale-110 transition-transform" />
-            </button>
+            {cartQuantity === 0 ? (
+              <button
+                onClick={() => addToCart(product)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold text-xs sm:text-sm transition-all shadow-xs hover:shadow active:scale-95 cursor-pointer group/btn"
+                title="Add to Shopping Cart"
+                aria-label={`Add ${product.name} to Cart`}
+              >
+                <ShoppingBag className="w-4 h-4 text-amber-800 group-hover/btn:scale-110 transition-transform" />
+                <span className="hidden xs:inline">Add</span>
+              </button>
+            ) : (
+              <div className="inline-flex items-center border border-emerald-600 bg-emerald-50 rounded-xl overflow-hidden shadow-xs">
+                <button
+                  onClick={() => updateQuantity(product.id, cartQuantity - 1)}
+                  className="px-2 py-1.5 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer"
+                  title="Decrease quantity"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="px-1.5 text-xs font-bold text-emerald-950 select-none">
+                  {cartQuantity}
+                </span>
+                <button
+                  onClick={() => updateQuantity(product.id, cartQuantity + 1)}
+                  className="px-2 py-1.5 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer"
+                  title="Increase quantity"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             <Link
               href={`/checkout?productId=${product.id}`}
-              className="inline-flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 active:scale-95 text-white font-semibold text-xs sm:text-sm px-3.5 sm:px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
+              className="inline-flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 active:scale-95 text-white font-semibold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
             >
               <span>Buy Now</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
