@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PRODUCTS, CATEGORIES, CategoryType } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
+import { useLanguage } from "@/context/LanguageContext";
 import { Filter, ShoppingBag, Sparkles, X, Search } from "lucide-react";
 
 export function ProductCatalog() {
@@ -33,6 +34,8 @@ export function ProductCatalog() {
     router.push("/#catalog");
   };
 
+  const { t } = useLanguage();
+
   return (
     <section id="catalog" className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
       {/* Section Header */}
@@ -43,10 +46,10 @@ export function ProductCatalog() {
             <span>Curated Artisan Collection</span>
           </div>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
-            Handcrafted Goods
+            {t("catalog.title")}
           </h2>
           <p className="text-sm sm:text-base text-stone-600 mt-2 max-w-xl">
-            Each bag, pouch, and hair accessory is individually cut and stitched by mom with fine French seams and reinforced stress points.
+            {t("catalog.subtitle")}
           </p>
         </div>
 

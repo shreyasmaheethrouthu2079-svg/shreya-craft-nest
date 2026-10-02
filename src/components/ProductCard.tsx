@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Star, CheckCircle2, ArrowRight, Sparkles, ShoppingBag, Plus, Minus } from "lucide-react";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, updateQuantity, getItemQuantity } = useCart();
+  const { t } = useLanguage();
   const cartQuantity = getItemQuantity(product.id);
 
   const discountPercent = Math.round(
@@ -64,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
             <span className="text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium">
-              In Stock
+              {t("catalog.inStock")}
             </span>
           </div>
 
@@ -131,7 +133,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 aria-label={`Add ${product.name} to Cart`}
               >
                 <ShoppingBag className="w-4 h-4 text-amber-800 group-hover/btn:scale-110 transition-transform" />
-                <span className="hidden xs:inline">Add</span>
+                <span className="hidden xs:inline">{t("catalog.addToCart")}</span>
               </button>
             ) : (
               <div className="inline-flex items-center border border-emerald-600 bg-emerald-50 rounded-xl overflow-hidden shadow-xs">
