@@ -95,40 +95,29 @@ export default function HomePage() {
                   <div className="absolute -bottom-6 -left-6 w-64 h-64 bg-emerald-200/30 rounded-full blur-2xl -z-10" />
 
                   {/* Main framed photo */}
-                  <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-stone-100 aspect-square">
+                  <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-[#FAF7F2] aspect-square">
                     <Image
                       src="/products/hero-collection.jpg"
                       alt="Artisanal Fabrics Collective - Handcrafted bags & pouches by Shreya Crafts Nest"
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
                       priority
-                      className="object-cover"
+                      className="object-contain p-2"
                     />
+                  </div>
 
-                    {/* Floating badge top left */}
-                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-lg border border-amber-200/80 flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-800">
-                        <Scissors className="w-3.5 h-3.5" />
+                  {/* Badges placed neatly beneath the image so nothing covers the bags */}
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-sm border border-amber-200/80 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-800">
+                        <Scissors className="w-3 h-3" />
                       </div>
-                      <div>
-                        <p className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider">
-                          Technique
-                        </p>
-                        <p className="text-xs font-bold text-stone-900">
-                          Hand-Guided Stitching
-                        </p>
-                      </div>
+                      <span className="font-bold text-stone-900">Hand-Guided Stitching</span>
                     </div>
 
-                    {/* Floating pill bottom right */}
-                    <div className="absolute bottom-4 right-4 bg-stone-900/90 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-stone-700 flex items-center gap-3">
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <div>
-                        <p className="text-xs font-bold">Pan-India Express Shipping</p>
-                        <p className="text-[10px] text-stone-300">
-                          Delivering across all Indian postal zones
-                        </p>
-                      </div>
+                    <div className="bg-stone-900 text-white px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="font-medium">Pan-India Express Dispatch</span>
                     </div>
                   </div>
                 </div>
