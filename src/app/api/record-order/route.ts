@@ -10,21 +10,59 @@ export async function POST(request: Request) {
       razorpay_payment_id,
       razorpay_signature,
       productId,
+      items,
       customer,
     } = body;
 
-    if (!productId || !customer || !customer.fullName || !customer.phone) {
+    if (!customer || !customer.fullName || !customer.phone) {
       return NextResponse.json(
-        { error: "Missing required order or customer information" },
+        { error: "Missing required customer shipping information" },
         { status: 400 }
       );
     }
 
-    const product = getProductById(productId);
-    if (!product) {
+    const orderItems: Array<{
+      id: string;
+      name: string;
+      category: string;
+      price: number;
+      quantity: number;
+    }> = [];
+    let calculatedTotal = 0;
+
+    if (items && Array.isArray(items) && items.length > 0) {
+      for (const item of items) {
+        const prod = getProductById(item.productId || item.id);
+        if (prod) {
+          const qty = item.quantity && item.quantity > 0 ? item.quantity : 1;
+          orderItems.push({
+            id: prod.id,
+            name: prod.name,
+            category: prod.category,
+            price: prod.price,
+            quantity: qty,
+          });
+          calculatedTotal += prod.price * qty;
+        }
+      }
+    } else if (productId) {
+      const prod = getProductById(productId);
+      if (prod) {
+        orderItems.push({
+          id: prod.id,
+          name: prod.name,
+          category: prod.category,
+          price: prod.price,
+          quantity: 1,
+        });
+        calculatedTotal = prod.price;
+      }
+    }
+
+    if (orderItems.length === 0) {
       return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
+        { error: "No valid products found for this order" },
+        { status: 400 }
       );
     }
 
@@ -37,10 +75,8 @@ export async function POST(request: Request) {
     let isSignatureValid = false;
 
     if (isDemoOrder) {
-      // In demo mode or local testing, simulate verified payment
       isSignatureValid = true;
     } else {
-      // Perform strict cryptographic HMAC-SHA256 signature verification
       if (!razorpay_signature || !razorpay_payment_id || !razorpay_order_id) {
         return NextResponse.json(
           { error: "Incomplete payment verification payload" },
@@ -63,7 +99,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Standardized Order Record ready for Google Sheets, CRM, or Database
     const orderRecord = {
       orderId: razorpay_order_id || `demo_${Date.now()}`,
       paymentId: razorpay_payment_id || `pay_simulated_${Date.now()}`,
@@ -76,14 +111,8 @@ export async function POST(request: Request) {
         city: customer.city.trim(),
         pincode: customer.pincode.trim(),
       },
-      item: {
-        id: product.id,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        material: product.material,
-      },
-      amountPaid: product.price,
+      items: orderItems,
+      totalAmountPaid: calculatedTotal,
       currency: "INR",
       paymentMethod: isDemoOrder ? "UPI / Test Mode" : "Razorpay Verified UPI/Card",
       status: "CONFIRMED",
@@ -94,9 +123,12 @@ export async function POST(request: Request) {
     console.log(JSON.stringify(orderRecord, null, 2));
 
     // Optional Google Sheets Webhook Integration
-    // If GOOGLE_SHEETS_WEBHOOK_URL is provided in .env.local, forward order row
     const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
     let sheetSyncStatus = "not_configured";
+
+    const itemsSummary = orderItems
+      .map((item) => `${item.name} (Qty: ${item.quantity})`)
+      .join(", ");
 
     if (webhookUrl && !webhookUrl.includes("YOUR_")) {
       try {
@@ -112,9 +144,9 @@ export async function POST(request: Request) {
             customerName: orderRecord.customer.fullName,
             phoneNumber: orderRecord.customer.phone,
             deliveryAddress: `${orderRecord.customer.address}, ${orderRecord.customer.city} - ${orderRecord.customer.pincode}`,
-            productName: orderRecord.item.name,
-            category: orderRecord.item.category,
-            totalAmount: orderRecord.amountPaid,
+            productName: itemsSummary,
+            category: orderItems.map((i) => i.category).join(", "),
+            totalAmount: orderRecord.totalAmountPaid,
             paymentStatus: orderRecord.status,
           }),
         });
@@ -126,9 +158,13 @@ export async function POST(request: Request) {
       }
     }
 
-    // Generate pre-filled WhatsApp message for customer confirmation
+    // Direct WhatsApp message builder for the maker
+    const itemsListForWA = orderItems
+      .map((item) => `• ${item.name} x${item.quantity} (₹${item.price * item.quantity})`)
+      .join("\n");
+
     const waText = encodeURIComponent(
-      `Hello Shreya Crafts Nest! 🧵\nI just placed an order for *${product.name}* (₹${product.price}).\n\n*Order ID:* ${orderRecord.orderId}\n*Name:* ${customer.fullName}\n*Address:* ${customer.address}, ${customer.city} - ${customer.pincode}\n*Contact:* ${customer.phone}\n\nPlease confirm dispatch timeline. Thank you!`
+      `Hello Shreya Craft Nest! 🧵\nI just placed an order for:\n${itemsListForWA}\n\n*Total Amount:* ₹${calculatedTotal} (Free Shipping)\n*Order ID:* ${orderRecord.orderId}\n*Name:* ${customer.fullName}\n*Address:* ${customer.address}, ${customer.city} - ${customer.pincode}\n*Contact:* ${customer.phone}\n\nPlease confirm dispatch timeline. Thank you!`
     );
 
     const whatsappConfirmationUrl = `https://wa.me/919876543210?text=${waText}`;

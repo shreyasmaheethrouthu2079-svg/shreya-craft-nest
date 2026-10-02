@@ -4,11 +4,8 @@ import { Suspense, useState, useEffect, useId } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  getProductById,
-  PRODUCTS,
-  Product,
-} from "@/data/products";
+import { getProductById, PRODUCTS, Product } from "@/data/products";
+import { useCart, CartItem } from "@/context/CartContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
@@ -18,12 +15,11 @@ import {
   Lock,
   ArrowLeft,
   Sparkles,
-  Phone,
   MessageCircle,
   Clock,
   HeartHandshake,
   AlertCircle,
-  HelpCircle,
+  ShoppingBag,
 } from "lucide-react";
 
 interface CustomerForm {
@@ -37,7 +33,7 @@ interface CustomerForm {
 interface ConfirmedOrder {
   orderId: string;
   paymentId: string;
-  product: Product;
+  items: CartItem[];
   customer: CustomerForm;
   amount: number;
   whatsappConfirmationUrl?: string;
@@ -48,21 +44,20 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const rawProductId = searchParams.get("productId");
+  const { cart, clearCart } = useCart();
 
-  const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(
-    () => {
-      if (rawProductId) {
-        return getProductById(rawProductId) || PRODUCTS[0];
-      }
-      return PRODUCTS[0];
+  const [singleProduct, setSingleProduct] = useState<Product | undefined>(() => {
+    if (rawProductId) {
+      return getProductById(rawProductId);
     }
-  );
+    return undefined;
+  });
 
   useEffect(() => {
     if (rawProductId) {
       const found = getProductById(rawProductId);
       if (found) {
-        setSelectedProduct(found);
+        setSingleProduct(found);
       }
     }
   }, [rawProductId]);
@@ -87,28 +82,41 @@ function CheckoutContent() {
   const cityId = useId();
   const pincodeId = useId();
 
-  if (!selectedProduct) {
+  // Determine active checkout items (single direct buy vs full cart)
+  const checkoutItems: CartItem[] = singleProduct
+    ? [{ product: singleProduct, quantity: 1 }]
+    : cart;
+
+  const totalAmount = checkoutItems.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  // If no single product and cart is empty
+  if (checkoutItems.length === 0 && !confirmedOrder) {
     return (
-      <div className="text-center py-24 max-w-md mx-auto px-4">
-        <AlertCircle className="w-12 h-12 text-amber-600 mx-auto mb-4" />
-        <h2 className="font-serif text-2xl font-bold text-stone-900 mb-2">
-          Product Not Selected
+      <div className="text-center py-24 max-w-md mx-auto px-4 space-y-4">
+        <div className="w-16 h-16 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center mx-auto text-amber-800">
+          <ShoppingBag className="w-8 h-8" />
+        </div>
+        <h2 className="font-serif text-2xl font-bold text-stone-900">
+          Your Cart is Empty
         </h2>
-        <p className="text-sm text-stone-600 mb-6">
-          Please select a handcrafted piece from our collection to proceed with checkout.
+        <p className="text-sm text-stone-600">
+          You don't have any handcrafted items queued for checkout yet. Browse our collection to add something special.
         </p>
-        <Link
-          href="/#catalog"
-          className="bg-amber-800 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-md"
-        >
-          Browse Collection
-        </Link>
+        <div className="pt-2">
+          <Link
+            href="/#catalog"
+            className="inline-flex items-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-md transition-all"
+          >
+            <span>Browse Handcrafted Collection</span>
+            <ArrowLeft className="w-4 h-4 rotate-180" />
+          </Link>
+        </div>
       </div>
     );
   }
-
-  const shippingCost = 0; // Free pan-India delivery promotional offer
-  const totalAmount = selectedProduct.price + shippingCost;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -120,7 +128,7 @@ function CheckoutContent() {
   const handleProductSwitch = (newProductId: string) => {
     const newProduct = getProductById(newProductId);
     if (newProduct) {
-      setSelectedProduct(newProduct);
+      setSingleProduct(newProduct);
       router.replace(`/checkout?productId=${newProductId}`, { scroll: false });
     }
   };
@@ -132,12 +140,17 @@ function CheckoutContent() {
     isDemo?: boolean;
   }) => {
     try {
+      const itemsPayload = checkoutItems.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+      }));
+
       const recordRes = await fetch("/api/record-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...paymentPayload,
-          productId: selectedProduct.id,
+          items: itemsPayload,
           customer: form,
         }),
       });
@@ -151,12 +164,15 @@ function CheckoutContent() {
       setConfirmedOrder({
         orderId: paymentPayload.razorpay_order_id,
         paymentId: paymentPayload.razorpay_payment_id,
-        product: selectedProduct,
+        items: checkoutItems,
         customer: form,
         amount: totalAmount,
         whatsappConfirmationUrl: recordData.whatsappConfirmationUrl,
         isDemo: paymentPayload.isDemo,
       });
+
+      // Clear the cart upon successful order
+      clearCart();
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
@@ -187,11 +203,15 @@ function CheckoutContent() {
     setIsProcessing(true);
 
     try {
-      // 1. Initialize order on server
+      const itemsPayload = checkoutItems.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+      }));
+
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: selectedProduct.id }),
+        body: JSON.stringify({ items: itemsPayload }),
       });
 
       const orderData = await orderRes.json();
@@ -200,18 +220,21 @@ function CheckoutContent() {
         throw new Error(orderData.error || "Failed to create payment order");
       }
 
-      // Check if Razorpay SDK is available on window
       const isRazorpayLoaded = typeof window !== "undefined" && "Razorpay" in window;
 
-      // If Razorpay SDK is loaded and keys are present
+      // Real Razorpay popup flow
       if (isRazorpayLoaded && !orderData.isDemo) {
+        const orderSummaryText = checkoutItems
+          .map((i) => `${i.product.name} (x${i.quantity})`)
+          .join(", ");
+
         const options = {
           key: orderData.keyId,
           amount: orderData.amount,
           currency: "INR",
-          name: "Shreya Crafts Nest",
-          description: `Order: ${selectedProduct.name}`,
-          image: selectedProduct.image,
+          name: "Shreya Craft Nest",
+          description: `Order: ${orderSummaryText.slice(0, 80)}`,
+          image: checkoutItems[0]?.product.image,
           order_id: orderData.orderId,
           handler: function (response: any) {
             executeOrderRecording({
@@ -226,11 +249,11 @@ function CheckoutContent() {
             contact: form.phone,
           },
           notes: {
-            product: selectedProduct.name,
+            orderSummary: orderSummaryText,
             address: `${form.address}, ${form.city} - ${form.pincode}`,
           },
           theme: {
-            color: "#92400e", // Warm amber tone
+            color: "#92400e",
           },
           modal: {
             ondismiss: function () {
@@ -242,8 +265,7 @@ function CheckoutContent() {
         const razorpayInstance = new window.Razorpay(options);
         razorpayInstance.open();
       } else {
-        // Instant simulated checkout fallback (when testing locally without Razorpay live keys)
-        console.info("Using simulated checkout verification for demonstration");
+        // Simulated fallback for immediate testing without Razorpay live keys
         await executeOrderRecording({
           razorpay_order_id: orderData.orderId || `ord_demo_${Date.now()}`,
           razorpay_payment_id: `pay_simulated_${Date.now()}`,
@@ -258,12 +280,11 @@ function CheckoutContent() {
     }
   };
 
-  // SUCCESS CONFIRMATION STATE
+  // ORDER CONFIRMED SCREEN
   if (confirmedOrder) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 sm:py-20">
         <div className="bg-white rounded-3xl border border-emerald-200/90 shadow-xl overflow-hidden p-6 sm:p-10 text-center">
-          {/* Animated Celebration Icon */}
           <div className="w-20 h-20 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
             <CheckCircle2 className="w-10 h-10 text-emerald-700" />
           </div>
@@ -278,16 +299,15 @@ function CheckoutContent() {
           </h1>
 
           <p className="text-sm sm:text-base text-stone-600 mt-2 max-w-lg mx-auto">
-            Mom has received your order and is preparing to carefully inspect, wrap, and pack your handmade treasure.
+            Mom has received your order and is preparing to carefully inspect, wrap, and pack your handmade treasures.
           </p>
 
           {confirmedOrder.isDemo && (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 max-w-md mx-auto">
-              <strong>Demo/Dev Mode:</strong> Simulated checkout completed. Connect your real Razorpay keys in <code>.env.local</code> to accept live UPI payments.
+              <strong>Demo Mode:</strong> Simulated checkout completed. Connect your real Razorpay keys in <code>.env.local</code> to accept live UPI payments.
             </div>
           )}
 
-          {/* Dispatch Notice Card */}
           <div className="my-8 bg-[#FAF8F5] border border-amber-200/80 rounded-2xl p-5 sm:p-6 text-left space-y-4">
             <div className="flex items-center gap-3 text-amber-900 font-semibold text-sm border-b border-amber-200/60 pb-3">
               <Clock className="w-5 h-5 text-amber-700" />
@@ -317,18 +337,21 @@ function CheckoutContent() {
                 </p>
               </div>
               <div>
-                <p className="text-stone-500 font-medium">Item Ordered:</p>
-                <p className="font-semibold text-stone-800">
-                  {confirmedOrder.product.name}
-                </p>
-                <p className="text-stone-600">
+                <p className="text-stone-500 font-medium">Items Ordered ({confirmedOrder.items.length}):</p>
+                <ul className="space-y-1 mt-1">
+                  {confirmedOrder.items.map((item, idx) => (
+                    <li key={idx} className="font-medium text-stone-800">
+                      • {item.product.name} × {item.quantity} (₹{item.product.price * item.quantity})
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-stone-700 font-semibold mt-2 pt-1 border-t border-amber-200/60">
                   Total Paid: <span className="font-bold text-emerald-800">₹{confirmedOrder.amount}</span> (Free Shipping)
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Action CTAs: WhatsApp Maker & Back to Store */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             {confirmedOrder.whatsappConfirmationUrl && (
               <a
@@ -355,10 +378,9 @@ function CheckoutContent() {
     );
   }
 
-  // STANDARD CHECKOUT FORM STATE
+  // CHECKOUT INPUT FORM
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-      {/* Back button */}
       <Link
         href="/#catalog"
         className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-stone-600 hover:text-amber-800 mb-8 transition-colors group"
@@ -368,7 +390,6 @@ function CheckoutContent() {
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Left Column: Customer Shipping Form */}
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-white rounded-3xl border border-[#EDE6DD] p-6 sm:p-8 shadow-sm">
             <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-6">
@@ -393,7 +414,6 @@ function CheckoutContent() {
             )}
 
             <form onSubmit={handleCheckoutSubmit} className="space-y-4">
-              {/* Full Name */}
               <div>
                 <label
                   htmlFor={fullNameId}
@@ -414,7 +434,6 @@ function CheckoutContent() {
                 />
               </div>
 
-              {/* WhatsApp Phone */}
               <div>
                 <label
                   htmlFor={phoneId}
@@ -447,7 +466,6 @@ function CheckoutContent() {
                 </p>
               </div>
 
-              {/* Detailed Street Address */}
               <div>
                 <label
                   htmlFor={addressId}
@@ -468,7 +486,6 @@ function CheckoutContent() {
                 />
               </div>
 
-              {/* City and Pincode */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
@@ -514,7 +531,6 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Payment Button */}
               <div className="pt-6">
                 <button
                   type="submit"
@@ -538,62 +554,75 @@ function CheckoutContent() {
           </div>
         </div>
 
-        {/* Right Column: Order Summary Card */}
+        {/* ORDER SUMMARY */}
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-white rounded-3xl border border-[#EDE6DD] p-6 sm:p-8 shadow-sm">
-            <h2 className="font-serif text-xl font-bold text-stone-900 border-b border-stone-100 pb-4 mb-4">
-              Order Summary
-            </h2>
+            <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-4">
+              <h2 className="font-serif text-xl font-bold text-stone-900">
+                Order Summary
+              </h2>
+              <span className="text-xs text-stone-500 font-medium">
+                {checkoutItems.length} {checkoutItems.length === 1 ? "item" : "items"}
+              </span>
+            </div>
 
-            {/* Selected item snapshot */}
-            <div className="flex gap-4 items-start pb-6 border-b border-stone-100">
-              <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 flex-shrink-0">
-                <Image
-                  src={selectedProduct.image}
-                  alt={selectedProduct.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="flex-grow">
-                <span className="text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                  {selectedProduct.category}
-                </span>
-                <h3 className="font-serif text-base font-bold text-stone-900 mt-1 line-clamp-1">
-                  {selectedProduct.name}
-                </h3>
-                <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">
-                  {selectedProduct.material}
-                </p>
-                <div className="font-serif text-lg font-bold text-stone-900 mt-1">
-                  ₹{selectedProduct.price}
+            {/* List of items in the order */}
+            <div className="space-y-4 pb-6 border-b border-stone-100 max-h-80 overflow-y-auto pr-1">
+              {checkoutItems.map(({ product, quantity }) => (
+                <div key={product.id} className="flex gap-4 items-center">
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex-shrink-0">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h3 className="font-serif text-sm font-bold text-stone-900 truncate">
+                      {product.name}
+                    </h3>
+                    <p className="text-xs text-stone-500 truncate">
+                      {product.material}
+                    </p>
+                    <div className="flex items-center justify-between mt-1 text-xs">
+                      <span className="text-stone-500 font-medium">
+                        Qty: <strong className="text-stone-800">{quantity}</strong> × ₹{product.price}
+                      </span>
+                      <span className="font-serif font-bold text-stone-900">
+                        ₹{product.price * quantity}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
 
-            {/* Quick switcher if customer wants to change item */}
-            <div className="py-4 border-b border-stone-100">
-              <label className="block text-xs font-semibold text-stone-600 mb-1.5">
-                Switch or choose another handcrafted item:
-              </label>
-              <select
-                value={selectedProduct.id}
-                onChange={(e) => handleProductSwitch(e.target.value)}
-                className="w-full text-xs py-2 px-3 rounded-lg border border-stone-300 bg-[#FAF8F5] text-stone-800 focus:outline-none focus:border-amber-700"
-              >
-                {PRODUCTS.map((prod) => (
-                  <option key={prod.id} value={prod.id}>
-                    {prod.name} (₹{prod.price})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Quick switcher if customer is buying single item and wants to switch */}
+            {singleProduct && (
+              <div className="py-4 border-b border-stone-100">
+                <label className="block text-xs font-semibold text-stone-600 mb-1.5">
+                  Switch or choose another handcrafted item:
+                </label>
+                <select
+                  value={singleProduct.id}
+                  onChange={(e) => handleProductSwitch(e.target.value)}
+                  className="w-full text-xs py-2 px-3 rounded-lg border border-stone-300 bg-[#FAF8F5] text-stone-800 focus:outline-none focus:border-amber-700"
+                >
+                  {PRODUCTS.map((prod) => (
+                    <option key={prod.id} value={prod.id}>
+                      {prod.name} (₹{prod.price})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Price breakdown */}
             <div className="space-y-2 py-4 border-b border-stone-100 text-xs sm:text-sm">
               <div className="flex justify-between text-stone-600">
-                <span>Handcrafted Item Price</span>
-                <span>₹{selectedProduct.price}</span>
+                <span>Items Subtotal</span>
+                <span>₹{totalAmount}</span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Pan-India Courier Shipping</span>
@@ -644,7 +673,7 @@ export default function CheckoutPage() {
               <div className="text-center space-y-3">
                 <div className="w-10 h-10 border-4 border-amber-700 border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-sm font-semibold text-stone-600">
-                  Loading Shreya Crafts Nest Checkout...
+                  Loading Shreya Craft Nest Checkout...
                 </p>
               </div>
             </div>

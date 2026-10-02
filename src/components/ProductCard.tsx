@@ -1,13 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { Star, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
+import { Star, CheckCircle2, ArrowRight, Sparkles, ShoppingBag } from "lucide-react";
 import { Product } from "@/data/products";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { addToCart } = useCart();
+
   const discountPercent = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
   );
@@ -54,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span>{product.rating.toFixed(1)}</span>
               <span className="text-stone-400 font-normal">
-                ({product.reviewsCount} verified reviews)
+                ({product.reviewsCount} reviews)
               </span>
             </div>
             <span className="text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium">
@@ -99,7 +104,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Card Footer with Price & Order CTA */}
+      {/* Card Footer with Price, Add to Cart & Buy Now */}
       <div className="p-5 sm:p-6 pt-0 border-t border-stone-100 mt-2">
         <div className="flex items-center justify-between pt-4">
           <div>
@@ -116,13 +121,24 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
 
-          <Link
-            href={`/checkout?productId=${product.id}`}
-            className="inline-flex items-center gap-2 bg-amber-700 hover:bg-amber-800 active:scale-95 text-white font-semibold text-sm px-4 sm:px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
-          >
-            <span>Order Now</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => addToCart(product)}
+              className="p-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition-colors shadow-xs cursor-pointer flex items-center justify-center group/btn"
+              title="Add to Shopping Cart"
+              aria-label={`Add ${product.name} to Cart`}
+            >
+              <ShoppingBag className="w-4 h-4 text-amber-800 group-hover/btn:scale-110 transition-transform" />
+            </button>
+
+            <Link
+              href={`/checkout?productId=${product.id}`}
+              className="inline-flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 active:scale-95 text-white font-semibold text-xs sm:text-sm px-3.5 sm:px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
+            >
+              <span>Buy Now</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </article>

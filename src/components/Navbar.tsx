@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, MessageCircle, ShoppingBag } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export function Navbar() {
+  const { totalItems, toggleCart } = useCart();
+
   return (
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#EDE6DD] transition-all">
       {/* Top announcement bar */}
@@ -35,16 +40,35 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Navigation links & WhatsApp contact */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        {/* Navigation links, Cart & WhatsApp contact */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
             href="/#catalog"
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-stone-700 hover:text-amber-800 px-3 py-2 rounded-lg hover:bg-stone-100/60 transition-colors"
+            className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-stone-700 hover:text-amber-800 px-3 py-2 rounded-lg hover:bg-stone-100/60 transition-colors"
           >
-            <ShoppingBag className="w-4 h-4 text-amber-700" />
-            <span>Shop Collection</span>
+            <span>Collection</span>
           </Link>
 
+          {/* Cart Drawer Trigger Button */}
+          <button
+            onClick={toggleCart}
+            className="relative inline-flex items-center gap-2 bg-white hover:bg-amber-50/70 border border-stone-300 hover:border-amber-400 text-stone-800 px-3.5 py-2 rounded-full shadow-xs hover:shadow transition-all cursor-pointer group"
+            aria-label="View Shopping Cart"
+          >
+            <div className="relative">
+              <ShoppingBag className="w-4 h-4 text-amber-800 group-hover:scale-110 transition-transform" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2.5 w-4 h-4 rounded-full bg-emerald-700 text-white font-bold text-[10px] flex items-center justify-center shadow-xs">
+                  {totalItems}
+                </span>
+              )}
+            </div>
+            <span className="text-xs sm:text-sm font-semibold text-stone-800">
+              Cart
+            </span>
+          </button>
+
+          {/* WhatsApp Direct Inquiries */}
           <a
             href="https://wa.me/919876543210?text=Hi%20Shreya%2C%20I%20am%20interested%20in%20your%20handmade%20crafts%20collection!"
             target="_blank"
@@ -53,8 +77,7 @@ export function Navbar() {
             aria-label="Chat on WhatsApp"
           >
             <MessageCircle className="w-4 h-4 fill-white" />
-            <span className="hidden xs:inline">WhatsApp Inquiries</span>
-            <span className="xs:hidden">Chat</span>
+            <span className="hidden xs:inline">WhatsApp</span>
           </a>
         </div>
       </div>

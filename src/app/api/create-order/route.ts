@@ -5,20 +5,47 @@ import { getProductById } from "@/data/products";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { productId } = body;
+    const { productId, items } = body;
 
-    if (!productId) {
-      return NextResponse.json(
-        { error: "Product ID is required" },
-        { status: 400 }
-      );
+    const orderItems: Array<{
+      id: string;
+      name: string;
+      price: number;
+      quantity: number;
+    }> = [];
+    let totalAmountRupees = 0;
+
+    if (items && Array.isArray(items) && items.length > 0) {
+      for (const item of items) {
+        const prod = getProductById(item.productId || item.id);
+        if (prod) {
+          const qty = item.quantity && item.quantity > 0 ? item.quantity : 1;
+          orderItems.push({
+            id: prod.id,
+            name: prod.name,
+            price: prod.price,
+            quantity: qty,
+          });
+          totalAmountRupees += prod.price * qty;
+        }
+      }
+    } else if (productId) {
+      const prod = getProductById(productId);
+      if (prod) {
+        orderItems.push({
+          id: prod.id,
+          name: prod.name,
+          price: prod.price,
+          quantity: 1,
+        });
+        totalAmountRupees = prod.price;
+      }
     }
 
-    const product = getProductById(productId);
-    if (!product) {
+    if (orderItems.length === 0 || totalAmountRupees <= 0) {
       return NextResponse.json(
-        { error: "Product not found in catalog" },
-        { status: 404 }
+        { error: "No valid products found for order" },
+        { status: 400 }
       );
     }
 
@@ -26,7 +53,7 @@ export async function POST(request: Request) {
       process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    const amountInPaise = Math.round(product.price * 100);
+    const amountInPaise = Math.round(totalAmountRupees * 100);
 
     const isPlaceholderKey =
       !keyId ||
@@ -46,11 +73,11 @@ export async function POST(request: Request) {
         const orderOptions = {
           amount: amountInPaise,
           currency: "INR",
-          receipt: `scn_${product.id.slice(0, 10)}_${Date.now()}`,
+          receipt: `scn_${Date.now()}`,
           notes: {
-            brand: "Shreya Crafts Nest",
-            productId: product.id,
-            productName: product.name,
+            brand: "Shreya Craft Nest",
+            itemsCount: orderItems.length.toString(),
+            summary: orderItems.map((i) => `${i.name} (x${i.quantity})`).join(", "),
           },
         };
 
@@ -62,11 +89,8 @@ export async function POST(request: Request) {
           amount: order.amount,
           currency: order.currency,
           keyId: keyId,
-          product: {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-          },
+          items: orderItems,
+          totalAmount: totalAmountRupees,
           isDemo: false,
         });
       } catch (razorpayErr: any) {
@@ -74,11 +98,10 @@ export async function POST(request: Request) {
           "Razorpay API returned error (falling back to demo mode):",
           razorpayErr.error?.description || razorpayErr.message
         );
-        // Fallback to demo mode if credentials are unauthenticated
       }
     }
 
-    // Development / Demo fallback if Razorpay keys are placeholders or not yet verified
+    // Development / Demo fallback if Razorpay keys are placeholders
     const mockOrderId = `order_demo_${Date.now()}_${Math.random()
       .toString(36)
       .substring(2, 7)}`;
@@ -89,11 +112,8 @@ export async function POST(request: Request) {
       amount: amountInPaise,
       currency: "INR",
       keyId: keyId || "rzp_test_placeholder",
-      product: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-      },
+      items: orderItems,
+      totalAmount: totalAmountRupees,
       isDemo: true,
       message:
         "Demo mode active: Configure active RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env.local for live production transactions.",
