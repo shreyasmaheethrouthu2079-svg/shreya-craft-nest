@@ -378,11 +378,19 @@ function CheckoutContent() {
             </div>
           </div>
 
-          {/* Action CTAs: Direct Back to Store */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          {/* Action CTAs: Track Order, Continue Shopping, Print Receipt */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link
+              href={`/track-order?orderId=${confirmedOrder.orderId}`}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm px-7 py-3.5 rounded-xl shadow-md transition-all cursor-pointer"
+            >
+              <Truck className="w-4 h-4 text-emerald-100" />
+              <span>Track Your Order Live</span>
+            </Link>
+
             <Link
               href="/"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-sm px-8 py-3.5 rounded-xl shadow-md transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-sm px-6 py-3.5 rounded-xl shadow-md transition-all cursor-pointer"
             >
               <span>Continue Shopping</span>
               <ArrowLeft className="w-4 h-4 rotate-180" />
@@ -390,9 +398,9 @@ function CheckoutContent() {
 
             <button
               onClick={() => window.print()}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm px-6 py-3.5 rounded-xl border border-stone-300 shadow-xs transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm px-5 py-3.5 rounded-xl border border-stone-300 shadow-xs transition-all cursor-pointer"
             >
-              <span>Print Order Receipt</span>
+              <span>Print Receipt</span>
             </button>
           </div>
         </div>

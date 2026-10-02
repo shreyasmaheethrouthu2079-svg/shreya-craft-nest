@@ -57,6 +57,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/track-order" className="hover:text-amber-300 text-amber-400/90 font-medium transition-colors flex items-center gap-1.5">
+                  <span>Track Your Order</span>
+                  <span className="text-[10px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-800/80">Live</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/#story" className="hover:text-amber-300 transition-colors">
                   The Maker's Story
                 </Link>

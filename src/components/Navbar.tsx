@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Sparkles, MessageCircle, ShoppingBag } from "lucide-react";
+import { Sparkles, MessageCircle, ShoppingBag, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 export function Navbar() {
@@ -47,6 +47,14 @@ export function Navbar() {
             className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-stone-700 hover:text-amber-800 px-3 py-2 rounded-lg hover:bg-stone-100/60 transition-colors"
           >
             <span>Collection</span>
+          </Link>
+
+          <Link
+            href="/track-order"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-stone-700 hover:text-amber-800 px-2.5 sm:px-3 py-2 rounded-lg hover:bg-stone-100/60 transition-colors"
+          >
+            <Truck className="w-4 h-4 text-amber-800" />
+            <span className="hidden sm:inline">Track Order</span>
           </Link>
 
           {/* Cart Drawer Trigger Button */}

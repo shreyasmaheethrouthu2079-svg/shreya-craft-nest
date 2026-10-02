@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getProductById } from "@/data/products";
+import { saveOrder } from "@/data/ordersStore";
 
 export async function POST(request: Request) {
   try {
@@ -126,6 +127,23 @@ export async function POST(request: Request) {
       status: "ORDER_CONFIRMED",
       createdAt: new Date().toISOString(),
     };
+
+    // Save to local orders store for live online tracking lookup
+    saveOrder({
+      orderId: orderRecord.orderId,
+      paymentId: orderRecord.paymentId,
+      paymentMethod: orderRecord.paymentMethod,
+      paymentStatus: orderRecord.paymentStatus,
+      customer: orderRecord.customer,
+      items: orderRecord.items,
+      totalAmountPaid: orderRecord.totalAmountPaid,
+      currency: orderRecord.currency,
+      status: "ORDER_CONFIRMED",
+      courierName: "Delhivery Express Surface",
+      trackingNumber: `DEL-${Date.now().toString().slice(-8)}`,
+      estimatedDelivery: "2-3 Business Days",
+      createdAt: orderRecord.createdAt,
+    });
 
     console.log("=== NEW VERIFIED ORDER PLACED (NO WHATSAPP REQUIRED) ===");
     console.log(JSON.stringify(orderRecord, null, 2));
