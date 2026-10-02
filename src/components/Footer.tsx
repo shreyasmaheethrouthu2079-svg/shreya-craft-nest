@@ -1,0 +1,102 @@
+import Link from "next/link";
+import { Heart, MessageCircle, ShieldCheck, Sparkles, MapPin } from "lucide-react";
+
+export function Footer() {
+  return (
+    <footer className="bg-stone-900 text-stone-300 mt-20 border-t border-stone-800">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-12">
+          {/* Brand & Story */}
+          <div className="md:col-span-2 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                <Heart className="w-4 h-4 fill-amber-400/30 text-amber-400" />
+              </div>
+              <span className="font-serif text-2xl font-bold text-white tracking-wide">
+                Shreya Crafts Nest
+              </span>
+            </div>
+            <p className="text-sm text-stone-400 leading-relaxed max-w-md">
+              A heartwarming mother-daughter handmade studio. We create small-batch, sustainably stitched canvas tote bags, floral embroidered shoulder purses, travel pouches, and gentle cotton scrunchies made with love.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-amber-300/90 pt-2 font-medium">
+              <span className="flex items-center gap-1.5 bg-stone-800/80 px-3 py-1.5 rounded-full border border-stone-700/60">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Small Batch Handcrafted
+              </span>
+              <span className="flex items-center gap-1.5 bg-stone-800/80 px-3 py-1.5 rounded-full border border-stone-700/60">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Zero Synthetic Plastic
+              </span>
+            </div>
+          </div>
+
+          {/* Quick links & categories */}
+          <div className="space-y-3">
+            <h3 className="text-xs uppercase tracking-widest text-amber-400 font-semibold">
+              Explore Collections
+            </h3>
+            <ul className="space-y-2 text-sm text-stone-400">
+              <li>
+                <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
+                  Canvas Handbags & Totes
+                </Link>
+              </li>
+              <li>
+                <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
+                  Quilted Travel Pouches
+                </Link>
+              </li>
+              <li>
+                <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
+                  Cotton & Silk Scrunchies
+                </Link>
+              </li>
+              <li>
+                <Link href="/#story" className="hover:text-amber-300 transition-colors">
+                  The Maker's Story
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Customer Care & WhatsApp */}
+          <div className="space-y-4">
+            <h3 className="text-xs uppercase tracking-widest text-amber-400 font-semibold">
+              Direct Maker Contact
+            </h3>
+            <p className="text-xs text-stone-400 leading-normal">
+              Have a custom color request, bulk gift requirement, or questions about fabric care? We reply promptly!
+            </p>
+
+            <a
+              href="https://wa.me/919876543210?text=Hi%20Shreya%20Crafts%20Nest%2C%20I%20have%20an%20inquiry%20regarding%20your%20products!"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all w-full justify-center"
+            >
+              <MessageCircle className="w-4 h-4 fill-white" />
+              <span>Chat on WhatsApp</span>
+            </a>
+
+            <div className="flex items-center gap-2 text-xs text-stone-400 pt-1">
+              <MapPin className="w-3.5 h-3.5 text-stone-500" />
+              <span>Dispatched with love from India</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom divider with UPI logos & copyright */}
+        <div className="mt-14 pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
+          <p>© {new Date().getFullYear()} Shreya Crafts Nest. Hand-stitched with love & devotion.</p>
+          <div className="flex items-center gap-3 text-stone-400">
+            <span className="font-semibold text-stone-300">Accepted Payments:</span>
+            <span className="bg-stone-800 px-2 py-1 rounded text-emerald-400 font-medium">UPI</span>
+            <span className="bg-stone-800 px-2 py-1 rounded font-medium">Google Pay</span>
+            <span className="bg-stone-800 px-2 py-1 rounded font-medium">PhonePe</span>
+            <span className="bg-stone-800 px-2 py-1 rounded font-medium">Paytm</span>
+            <span className="bg-stone-800 px-2 py-1 rounded font-medium">Debit/Credit Cards</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
