@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PRODUCTS, CATEGORIES, CategoryType } from "@/data/products";
+import { PRODUCTS, CATEGORIES, CategoryType, Product } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
-import { Filter, ShoppingBag, Sparkles } from "lucide-react";
+import { Product3DModal } from "@/components/Product3DModal";
+import { Filter, ShoppingBag, Sparkles, Rotate3d } from "lucide-react";
 
 export function ProductCatalog() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
+  const [active3DProduct, setActive3DProduct] = useState<Product | null>(null);
 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === "All") return PRODUCTS;
@@ -26,13 +28,23 @@ export function ProductCatalog() {
             Handcrafted Goods
           </h2>
           <p className="text-sm sm:text-base text-stone-600 mt-2 max-w-xl">
-            Each bag, pouch, and hair accessory is individually cut and stitched by mom with fine French seams and reinforced stress points.
+            Each bag and pouch is individually cut and stitched by mom with fine French seams and reinforced stress points.
           </p>
         </div>
 
-        {/* Category count indicator */}
-        <div className="text-xs text-stone-500 font-medium">
-          Showing <span className="font-bold text-stone-800">{filteredProducts.length}</span> handcrafted designs
+        {/* 3D Studio Launcher Button & Count */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActive3DProduct(filteredProducts[0] || PRODUCTS[0])}
+            className="inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-amber-300 hover:text-amber-200 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-full border border-amber-500/40 shadow-md hover:shadow-lg transition-all cursor-pointer"
+          >
+            <Rotate3d className="w-4 h-4 text-amber-400 animate-spin-slow" />
+            <span>Open 3D Studio</span>
+          </button>
+
+          <div className="text-xs text-stone-500 font-medium hidden sm:block">
+            Showing <span className="font-bold text-stone-800">{filteredProducts.length}</span> pieces
+          </div>
         </div>
       </div>
 
@@ -60,11 +72,15 @@ export function ProductCatalog() {
         })}
       </div>
 
-      {/* Product Grid */}
+      {/* Product Grid with 3D Inspection */}
       {filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onOpen3D={(p) => setActive3DProduct(p)}
+            />
           ))}
         </div>
       ) : (
@@ -80,6 +96,16 @@ export function ProductCatalog() {
             Reset filter to All
           </button>
         </div>
+      )}
+
+      {/* Interactive 3D Inspection Studio Modal */}
+      {active3DProduct && (
+        <Product3DModal
+          isOpen={!!active3DProduct}
+          onClose={() => setActive3DProduct(null)}
+          product={active3DProduct}
+          onSelectProduct={(p) => setActive3DProduct(p)}
+        />
       )}
     </section>
   );

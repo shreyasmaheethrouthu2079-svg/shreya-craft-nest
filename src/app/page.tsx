@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TrustBanner } from "@/components/TrustBanner";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { ArtisanalCollectiveShowcase } from "@/components/ArtisanalCollectiveShowcase";
 import {
   Heart,
   Sparkles,
@@ -138,6 +139,9 @@ export default function HomePage() {
 
         {/* TRUST BANNER: 3-STEP PROCESS */}
         <TrustBanner />
+
+        {/* 3D ARTISANAL COLLECTIVE SHOWCASE */}
+        <ArtisanalCollectiveShowcase />
 
         {/* PRODUCT CATALOG WITH FILTER TABS */}
         <ProductCatalog />
