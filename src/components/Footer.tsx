@@ -62,11 +62,6 @@ export function Footer() {
                   <span className="text-[10px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-800/80">Live</span>
                 </Link>
               </li>
-              <li>
-                <Link href="/#story" className="hover:text-amber-300 transition-colors">
-                  The Maker's Story
-                </Link>
-              </li>
             </ul>
           </div>
 

@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   CheckCircle,
   Scissors,
-  Feather,
   ShoppingBag,
 } from "lucide-react";
 
@@ -125,68 +124,7 @@ export default function HomePage() {
         {/* PRODUCT CATALOG WITH FILTER TABS */}
         <ProductCatalog />
 
-        {/* THE MAKER'S STORY SECTION */}
-        <section id="story" className="py-20 bg-white border-t border-[#EDE6DD]">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-5 order-2 lg:order-1">
-                <div className="relative rounded-3xl overflow-hidden shadow-xl border-4 border-[#FAF8F5] aspect-square">
-                  <Image
-                    src="/products/terracotta-patchwork-tote.jpg"
-                    alt="Terracotta Kalamkari patchwork tote stitched with care"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-transparent to-transparent flex items-end p-6">
-                    <p className="text-white text-sm font-medium italic">
-                      "When you stitch for someone with your own hands, you give them a piece of your peace."
-                    </p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="lg:col-span-7 order-1 lg:order-2 space-y-5">
-                <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-900 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200">
-                  <Feather className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Our Heart & Heritage</span>
-                </div>
-
-                <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
-                  From Mom's Sewing Table to Your Everyday Life
-                </h2>
-
-                <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
-                  For over two decades, mom's old sewing machine has been the heart of our household. From mending favorite dresses to crafting custom travel pouches for relatives, her stitches have always been known for their neatness and unbreakable durability.
-                </p>
-
-                <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
-                  <strong className="text-stone-900">Shreya Crafts Nest</strong> was born out of a simple idea: why settle for synthetic, mass-produced accessories when you can carry a piece of slow-crafted art? Every item you purchase directly supports an artisan mother's passion and helps us keep traditional textile stitching alive.
-                </p>
-
-                <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-stone-100">
-                  <div>
-                    <div className="font-serif text-2xl font-bold text-amber-800">
-                      500+
-                    </div>
-                    <div className="text-xs text-stone-500">Bags & Pouches Stitched</div>
-                  </div>
-                  <div>
-                    <div className="font-serif text-2xl font-bold text-amber-800">
-                      100%
-                    </div>
-                    <div className="text-xs text-stone-500">Plastic-Free Fabrics</div>
-                  </div>
-                  <div>
-                    <div className="font-serif text-2xl font-bold text-amber-800">
-                      4.9 ★
-                    </div>
-                    <div className="text-xs text-stone-500">Average Customer Love</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <Footer />
