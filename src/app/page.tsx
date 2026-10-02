@@ -67,8 +67,8 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* CTA Buttons */}
-                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                {/* CTA Button */}
+                <div className="pt-4 flex items-center justify-center lg:justify-start">
                   <Link
                     href="#catalog"
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-base px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all"
@@ -76,13 +76,6 @@ export default function HomePage() {
                     <ShoppingBag className="w-5 h-5 text-amber-200" />
                     <span>Shop Collection</span>
                     <ArrowRight className="w-4 h-4 ml-1" />
-                  </Link>
-
-                  <Link
-                    href="#story"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-800 font-semibold text-base px-6 py-3.5 rounded-xl border border-stone-300 shadow-xs hover:border-amber-400 transition-all"
-                  >
-                    <span>Read Our Story</span>
                   </Link>
                 </div>
               </div>
