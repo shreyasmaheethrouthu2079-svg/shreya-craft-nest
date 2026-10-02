@@ -1,0 +1,67 @@
+[
+  {
+    "orderId": "SCN-820850-Q0K",
+    "paymentId": "COD-1790938820850",
+    "paymentMethod": "Cash on Delivery (Pay upon delivery)",
+    "paymentStatus": "PENDING_CASH_ON_DELIVERY",
+    "customer": {
+      "fullName": "Shreyas Maheeth Routhu",
+      "phone": "9493786989",
+      "address": "Nitte University Bengaluru Campus, Yelahanka, Bengaluru, Karnataka",
+      "city": "Bengaluru",
+      "pincode": "560064"
+    },
+    "items": [
+      {
+        "id": "olive-bloom-wristlet-pouch",
+        "name": "Olive Floral Block-Print Wristlet Pouch",
+        "category": "Pouches",
+        "price": 100,
+        "quantity": 1
+      }
+    ],
+    "totalAmountPaid": 100,
+    "currency": "INR",
+    "status": "ORDER_CONFIRMED",
+    "courierName": "Delhivery Express Surface",
+    "trackingNumber": "DEL-38820850",
+    "estimatedDelivery": "2-3 Business Days",
+    "createdAt": "2026-10-02T11:00:20.850Z"
+  },
+  {
+    "orderId": "SCN-782190",
+    "paymentId": "COD-782190",
+    "paymentMethod": "Cash on Delivery (Pay upon delivery)",
+    "paymentStatus": "PENDING_CASH_ON_DELIVERY",
+    "customer": {
+      "fullName": "Ananya Deshmukh",
+      "phone": "9876543210",
+      "address": "B-402, Sunshine Meadows, Baner",
+      "city": "Pune",
+      "pincode": "411045"
+    },
+    "items": [
+      {
+        "id": "olive-bloom-wristlet-pouch",
+        "name": "Olive Floral Block-Print Wristlet Pouch",
+        "category": "Pouches",
+        "price": 100,
+        "quantity": 1
+      },
+      {
+        "id": "indigo-fish-mini-tote",
+        "name": "Indigo Fish Quilted Mini Handbag",
+        "category": "Handbags",
+        "price": 140,
+        "quantity": 1
+      }
+    ],
+    "totalAmountPaid": 240,
+    "currency": "INR",
+    "status": "DISPATCHED",
+    "courierName": "Delhivery Surface Express",
+    "trackingNumber": "DEL-8491028392",
+    "estimatedDelivery": "Tomorrow by 6:00 PM",
+    "createdAt": "2026-09-30T22:59:53.701Z"
+  }
+]

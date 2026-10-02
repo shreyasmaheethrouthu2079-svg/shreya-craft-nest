@@ -35,7 +35,7 @@ export function Navbar() {
             <p className="text-xs text-stone-500 font-medium tracking-wide flex items-center gap-1.5">
               <span>Handcrafted by Mom</span>
               <span className="inline-block w-1 h-1 rounded-full bg-stone-300"></span>
-              <span className="text-emerald-700 font-semibold">Artisanal Creations</span>
+              <span className="text-emerald-700 font-semibold">Artisanal Creations & Supplies</span>
             </p>
           </div>
         </Link>
