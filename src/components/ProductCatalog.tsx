@@ -1,20 +1,40 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { PRODUCTS, CATEGORIES, CategoryType } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
-import { Filter, ShoppingBag, Sparkles } from "lucide-react";
+import { Filter, ShoppingBag, Sparkles, X, Search } from "lucide-react";
 
 export function ProductCatalog() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const querySearch = searchParams.get("search") || "";
+
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "All") return PRODUCTS;
-    return PRODUCTS.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory]);
+    return PRODUCTS.filter((p) => {
+      const matchCat =
+        selectedCategory === "All" || p.category === selectedCategory;
+      const q = querySearch.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.material.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q);
+
+      return matchCat && matchSearch;
+    });
+  }, [selectedCategory, querySearch]);
+
+  const clearSearch = () => {
+    router.push("/#catalog");
+  };
 
   return (
-    <section id="catalog" className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="catalog" className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
@@ -35,6 +55,25 @@ export function ProductCatalog() {
           Showing <span className="font-bold text-stone-800">{filteredProducts.length}</span> handcrafted designs
         </div>
       </div>
+
+      {/* Active Search Filter Badge if search query present */}
+      {querySearch && (
+        <div className="mb-6 p-3 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2 text-stone-800">
+            <Search className="w-4 h-4 text-amber-800" />
+            <span>
+              Search results for: <strong className="font-semibold text-amber-900">"{querySearch}"</strong>
+            </span>
+          </div>
+          <button
+            onClick={clearSearch}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-amber-900 hover:text-amber-950 bg-white border border-amber-300 px-3 py-1 rounded-lg shadow-2xs hover:bg-stone-50 transition-colors cursor-pointer"
+          >
+            <span>Clear Search</span>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Category Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar scroll-smooth">
@@ -71,13 +110,16 @@ export function ProductCatalog() {
         <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-stone-300 p-8">
           <ShoppingBag className="w-12 h-12 text-stone-300 mx-auto mb-3" />
           <p className="text-base font-medium text-stone-700">
-            No products found in this category right now.
+            No products found matching "{querySearch || selectedCategory}".
           </p>
           <button
-            onClick={() => setSelectedCategory("All")}
-            className="mt-4 text-xs font-semibold text-amber-700 underline underline-offset-4"
+            onClick={() => {
+              setSelectedCategory("All");
+              clearSearch();
+            }}
+            className="mt-4 text-xs font-semibold text-amber-700 underline underline-offset-4 cursor-pointer"
           >
-            Reset filter to All
+            Reset all filters
           </button>
         </div>
       )}

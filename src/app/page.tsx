@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
@@ -112,7 +113,9 @@ export default function HomePage() {
         </section>
 
         {/* PRODUCT CATALOG WITH FILTER TABS */}
-        <ProductCatalog />
+        <Suspense fallback={<div className="py-20 text-center text-stone-400">Loading catalog...</div>}>
+          <ProductCatalog />
+        </Suspense>
 
         {/* THE ARTISAN PROMISE / TRUST BANNER */}
         <TrustBanner />
