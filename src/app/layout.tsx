@@ -62,8 +62,27 @@ export default function RootLayout({
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="afterInteractive"
         />
+        {/* Google Translate Integration for Complete Page Translation */}
+        <Script id="google-translate-init" strategy="afterInteractive">
+          {`
+            function googleTranslateElementInit() {
+              if (window.google && window.google.translate) {
+                new window.google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'en,hi,mr,bn,ta,te,kn,ml',
+                  autoDisplay: false,
+                }, 'google_translate_element');
+              }
+            }
+          `}
+        </Script>
+        <Script
+          src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800 antialiased selection:bg-amber-200 selection:text-amber-900">
+        <div id="google_translate_element" style={{ display: "none" }} />
         <LanguageProvider>
           <CartProvider>
             {children}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   ShoppingBag,
   Plus,
@@ -31,6 +32,7 @@ export default function CartPage() {
     totalOriginalPrice,
     totalSavings,
   } = useCart();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans">
@@ -47,7 +49,7 @@ export default function CartPage() {
             <span>Home</span>
           </Link>
           <span>/</span>
-          <span className="text-stone-800 font-semibold">Shopping Cart</span>
+          <span className="text-stone-800 font-semibold">{t("cart.title")}</span>
         </div>
 
         {cart.length === 0 ? (
@@ -58,7 +60,7 @@ export default function CartPage() {
             </div>
 
             <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mb-2">
-              Your Shopping Cart is Empty
+              {t("cart.empty")}
             </h1>
             <p className="text-sm sm:text-base text-stone-600 max-w-md mx-auto mb-8 leading-relaxed">
               Explore our handmade tote bags, quilted pouches, and artisanal accessories lovingly stitched by mom.
@@ -259,7 +261,7 @@ export default function CartPage() {
                 <div className="bg-white rounded-3xl border border-stone-200/90 p-6 sm:p-7 shadow-sm">
                   {/* Header */}
                   <h2 className="text-xs font-bold uppercase tracking-wider text-stone-400 pb-3 border-b border-stone-100">
-                    Price Details
+                    {t("cart.priceDetails")}
                   </h2>
 
                   {/* Financial Breakdown */}
@@ -279,7 +281,7 @@ export default function CartPage() {
                     </div>
 
                     <div className="flex justify-between text-stone-600">
-                      <span>Delivery Charges</span>
+                      <span>{t("cart.deliveryFee")}</span>
                       <span className="font-semibold text-stone-800">
                         ₹40
                       </span>
@@ -295,7 +297,7 @@ export default function CartPage() {
                     {/* Total Amount Due */}
                     <div className="flex justify-between items-baseline pt-3 border-t border-dashed border-stone-200 text-stone-900">
                       <span className="font-bold text-sm sm:text-base">
-                        Total Amount
+                        {t("cart.total")}
                       </span>
                       <span className="font-serif text-2xl font-bold text-amber-900">
                         ₹{subtotal + 40}
@@ -317,7 +319,7 @@ export default function CartPage() {
                     className="w-full inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 active:scale-[0.98] text-white font-bold text-sm sm:text-base py-3.5 sm:py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all uppercase tracking-wide cursor-pointer"
                   >
                     <Lock className="w-4 h-4 text-amber-200" />
-                    <span>Place Order</span>
+                    <span>{t("cart.proceed")}</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 

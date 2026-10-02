@@ -47,3 +47,23 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #b5a48f;
 }
+
+/* Google Translate styling: hide default banner while allowing seamless translation */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame {
+  display: none !important;
+}
+body {
+  top: 0px !important;
+}
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+#google_translate_element {
+  display: none !important;
+}

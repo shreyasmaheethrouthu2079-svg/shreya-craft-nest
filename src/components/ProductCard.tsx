@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Discount badge */}
           {discountPercent > 0 && (
             <div className="absolute top-3 right-3 bg-emerald-700 text-white text-[11px] font-bold px-2 py-0.5 rounded-md shadow-md">
-              Save {discountPercent}%
+              {t("catalog.save")} {discountPercent}%
             </div>
           )}
         </div>
@@ -83,11 +83,11 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Material & Dimensions */}
           <div className="bg-[#FAF8F5] p-3 rounded-xl border border-stone-200/60 text-xs space-y-1">
             <div className="text-stone-700">
-              <span className="font-semibold text-stone-900">Fabric:</span>{" "}
+              <span className="font-semibold text-stone-900">{t("catalog.fabric")}</span>{" "}
               {product.material}
             </div>
             <div className="text-stone-600">
-              <span className="font-semibold text-stone-900">Dimensions:</span>{" "}
+              <span className="font-semibold text-stone-900">{t("catalog.dimensions")}</span>{" "}
               {product.dimensions}
             </div>
           </div>
@@ -112,7 +112,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-center justify-between pt-4">
           <div>
             <div className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
-              Price (Inc. Taxes)
+              {t("catalog.price")}
             </div>
             <div className="flex items-baseline gap-2">
               <span className="font-serif text-2xl font-bold text-stone-900">
@@ -163,7 +163,7 @@ export function ProductCard({ product }: ProductCardProps) {
               href={`/checkout?productId=${product.id}`}
               className="inline-flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 active:scale-95 text-white font-semibold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
             >
-              <span>Buy Now</span>
+              <span>{t("catalog.buyNow")}</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>

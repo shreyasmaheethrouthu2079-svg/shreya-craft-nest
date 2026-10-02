@@ -55,7 +55,11 @@ export function ProductCatalog() {
 
         {/* Category count indicator */}
         <div className="text-xs text-stone-500 font-medium">
-          Showing <span className="font-bold text-stone-800">{filteredProducts.length}</span> handcrafted designs
+          {t("catalog.showing")}{" "}
+          <span className="font-bold text-stone-800">
+            {filteredProducts.length}
+          </span>{" "}
+          {t("catalog.designs")}
         </div>
       </div>
 
@@ -86,6 +90,16 @@ export function ProductCatalog() {
         </div>
         {CATEGORIES.map((category) => {
           const isActive = selectedCategory === category;
+          const categoryLabel =
+            category === "All"
+              ? t("catalog.catAll")
+              : category === "Handbags"
+              ? t("catalog.catHandbags")
+              : category === "Pouches"
+              ? t("catalog.catPouches")
+              : category === "Accessories"
+              ? t("catalog.catAccessories")
+              : category;
           return (
             <button
               key={category}
@@ -96,7 +110,7 @@ export function ProductCatalog() {
                   : "bg-white text-stone-600 hover:text-stone-900 border border-[#EDE6DD] hover:border-amber-300"
               }`}
             >
-              {category}
+              {categoryLabel}
             </button>
           );
         })}
