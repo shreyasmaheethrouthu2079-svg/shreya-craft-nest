@@ -47,7 +47,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
-                  Cotton & Silk Scrunchies
+                  Artisan Quilted Mini Bags
                 </Link>
               </li>
               <li>

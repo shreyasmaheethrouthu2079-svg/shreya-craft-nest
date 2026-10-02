@@ -97,8 +97,8 @@ export default function HomePage() {
                   {/* Main framed photo */}
                   <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-stone-100 aspect-[4/5]">
                     <Image
-                      src="https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1000&q=80"
-                      alt="Artisan hand-stitched canvas tote by Shreya Crafts Nest"
+                      src="/products/botanical-ivy-shoulder-bag.jpg"
+                      alt="Artisan hand-stitched botanical shoulder bag by Shreya Crafts Nest"
                       fill
                       priority
                       className="object-cover"
@@ -149,8 +149,8 @@ export default function HomePage() {
               <div className="lg:col-span-5 order-2 lg:order-1">
                 <div className="relative rounded-3xl overflow-hidden shadow-xl border-4 border-[#FAF8F5] aspect-square">
                   <Image
-                    src="https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=900&q=80"
-                    alt="Floral embroidery stitched with care"
+                    src="/products/terracotta-patchwork-tote.jpg"
+                    alt="Terracotta Kalamkari patchwork tote stitched with care"
                     fill
                     className="object-cover"
                   />
