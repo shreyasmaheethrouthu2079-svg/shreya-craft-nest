@@ -5,7 +5,6 @@ import { Footer } from "@/components/Footer";
 import { TrustBanner } from "@/components/TrustBanner";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import {
-  Heart,
   Sparkles,
   ArrowRight,
   ShieldCheck,
@@ -29,13 +28,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               {/* Left Column: Story Copy & CTAs */}
               <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-                {/* High Trust Badge */}
-                <div className="inline-flex items-center gap-2 bg-amber-100/90 text-amber-900 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold border border-amber-300/70 shadow-xs">
-                  <Heart className="w-4 h-4 fill-amber-700 text-amber-700" />
-                  <span>100% Hand-Stitched by Mom</span>
-                  <span className="w-1 h-1 rounded-full bg-amber-400"></span>
-                  <span className="text-amber-800 font-medium">Small Batch Goods</span>
-                </div>
+
 
                 {/* Main Headline */}
                 <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-stone-900 tracking-tight leading-[1.15]">
