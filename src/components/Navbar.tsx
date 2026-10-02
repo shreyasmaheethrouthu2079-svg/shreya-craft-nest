@@ -10,14 +10,7 @@ import {
   Search,
   ShoppingCart,
   ChevronDown,
-  Menu,
-  ArrowRight,
   X,
-  Sparkles,
-  MessageCircle,
-  Truck,
-  ShieldCheck,
-  Package,
 } from "lucide-react";
 
 export function Navbar() {
@@ -28,7 +21,6 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -329,74 +321,6 @@ export function Navbar() {
             <Search className="w-4 h-4 text-stone-900" />
           </button>
         </form>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 2. AMAZON.IN SUB-NAVBAR (#232f3e) */}
-      {/* ======================================================== */}
-      <div className="bg-[#232f3e] text-xs font-medium px-3 sm:px-4 py-1.5 flex items-center justify-between overflow-x-auto no-scrollbar gap-4 text-stone-200">
-        <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap">
-          {/* All menu hamburger */}
-          <Link
-            href="/#catalog"
-            className="flex items-center gap-1 py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all text-white font-bold"
-          >
-            <Menu className="w-4 h-4" />
-            <span>All</span>
-          </Link>
-
-          <Link
-            href="/#catalog"
-            className="py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all"
-          >
-            Best Sellers
-          </Link>
-
-          <Link
-            href="/#catalog"
-            className="py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all"
-          >
-            Handbags (₹400)
-          </Link>
-
-          <Link
-            href="/#catalog"
-            className="py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all"
-          >
-            Quilted Pouches (₹100)
-          </Link>
-
-          <Link
-            href="/track-order"
-            className="py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all text-amber-300 font-semibold flex items-center gap-1"
-          >
-            <Truck className="w-3.5 h-3.5" />
-            <span>Track Orders</span>
-          </Link>
-
-          <Link
-            href="/checkout"
-            className="py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all"
-          >
-            Cash on Delivery
-          </Link>
-
-          <a
-            href="https://wa.me/919876543210?text=Hi%20Shreya%2C%20I%20have%20an%20inquiry%20regarding%20your%20handmade%20crafts%20collection!"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-1 px-2 rounded-xs border border-transparent hover:border-white transition-all text-emerald-400 font-semibold flex items-center gap-1"
-          >
-            <MessageCircle className="w-3.5 h-3.5 fill-emerald-400" />
-            <span>Customer Service</span>
-          </a>
-        </div>
-
-        {/* Right sub-bar promo banner */}
-        <div className="hidden lg:flex items-center gap-1.5 text-[#febd69] font-semibold text-xs whitespace-nowrap">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-          <span>Festive Deals: 100% Handcrafted by Mom</span>
-        </div>
       </div>
     </header>
   );
