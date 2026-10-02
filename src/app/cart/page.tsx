@@ -105,14 +105,14 @@ export default function CartPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* LEFT COLUMN: CART ITEMS LIST (8 cols) */}
               <div className="lg:col-span-8 space-y-4">
-                {/* Free Shipping Alert banner */}
-                <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex items-center justify-between gap-3 text-xs sm:text-sm">
-                  <div className="flex items-center gap-2.5 text-emerald-800 font-semibold">
-                    <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Free Pan-India Express Delivery & Artisan Gift Wrapping Applied!</span>
+                {/* Express Courier Banner */}
+                <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex items-center justify-between gap-3 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2.5 text-amber-900 font-semibold">
+                    <Truck className="w-4 h-4 text-amber-800 flex-shrink-0" />
+                    <span>Pan-India Express Delivery via Courier (₹40 standard delivery applied)</span>
                   </div>
-                  <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs uppercase tracking-wider">
-                    Eligible
+                  <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-xs uppercase tracking-wider">
+                    Express
                   </span>
                 </div>
 
@@ -280,18 +280,15 @@ export default function CartPage() {
 
                     <div className="flex justify-between text-stone-600">
                       <span>Delivery Charges</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="line-through text-stone-400">₹40</span>
-                        <span className="font-bold text-emerald-700 uppercase">
-                          Free
-                        </span>
-                      </div>
+                      <span className="font-semibold text-stone-800">
+                        ₹40
+                      </span>
                     </div>
 
                     <div className="flex justify-between text-stone-600">
                       <span>Secured Packaging</span>
-                      <span className="font-bold text-emerald-700 uppercase">
-                        Free
+                      <span className="text-stone-500">
+                        Included
                       </span>
                     </div>
 
@@ -301,7 +298,7 @@ export default function CartPage() {
                         Total Amount
                       </span>
                       <span className="font-serif text-2xl font-bold text-amber-900">
-                        ₹{subtotal}
+                        ₹{subtotal + 40}
                       </span>
                     </div>
                   </div>

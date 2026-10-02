@@ -12,6 +12,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
+  Truck,
 } from "lucide-react";
 
 export function CartDrawer() {
@@ -65,9 +66,9 @@ export function CartDrawer() {
           </div>
 
           {/* Promo ribbon */}
-          <div className="bg-emerald-50 border-b border-emerald-100 px-5 py-2.5 flex items-center justify-center gap-2 text-xs font-semibold text-emerald-800">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Pan-India Free Express Shipping Applied!</span>
+          <div className="bg-amber-50 border-b border-amber-100 px-5 py-2.5 flex items-center justify-center gap-2 text-xs font-semibold text-amber-900">
+            <Truck className="w-3.5 h-3.5 text-amber-700" />
+            <span>Pan-India Express Delivery via Courier (₹40)</span>
           </div>
 
           {/* Cart Items List */}
@@ -171,12 +172,12 @@ export function CartDrawer() {
                 </div>
                 <div className="flex justify-between text-stone-600">
                   <span>Pan-India Delivery</span>
-                  <span className="text-emerald-700 font-semibold">FREE</span>
+                  <span className="font-semibold text-stone-800">₹40</span>
                 </div>
                 <div className="flex justify-between text-base font-bold text-stone-900 pt-2 border-t border-stone-100">
                   <span>Total Amount Due</span>
                   <span className="font-serif text-xl text-amber-900">
-                    ₹{subtotal}
+                    ₹{subtotal + 40}
                   </span>
                 </div>
               </div>
@@ -194,7 +195,7 @@ export function CartDrawer() {
                   className="w-full inline-flex items-center justify-center gap-2.5 bg-amber-800 hover:bg-amber-900 active:scale-[0.99] text-white font-bold text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all"
                 >
                   <span>Proceed to Checkout</span>
-                  <span className="font-serif">(₹{subtotal})</span>
+                  <span className="font-serif">(₹{subtotal + 40})</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Link>
 

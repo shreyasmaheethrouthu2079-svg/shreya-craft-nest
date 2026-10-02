@@ -95,10 +95,13 @@ function CheckoutContent() {
     ? [{ product: singleProduct, quantity: 1 }]
     : cart;
 
-  const totalAmount = checkoutItems.reduce(
+  const itemsSubtotal = checkoutItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
+
+  const deliveryCharge = checkoutItems.length > 0 ? 40 : 0;
+  const totalAmount = itemsSubtotal + deliveryCharge;
 
   const STORE_UPI_ID = "shreyacraftnest@okaxis";
 
@@ -372,7 +375,7 @@ function CheckoutContent() {
                   ))}
                 </ul>
                 <p className="text-stone-800 font-bold mt-2 pt-1 border-t border-amber-200/60">
-                  Total: <span className="text-emerald-800 text-base">₹{confirmedOrder.amount}</span> (Free Shipping)
+                  Total: <span className="text-emerald-800 text-base">₹{confirmedOrder.amount}</span> (Includes ₹40 Delivery)
                 </p>
               </div>
             </div>
@@ -826,11 +829,11 @@ function CheckoutContent() {
             <div className="space-y-2 py-4 border-b border-stone-100 text-xs sm:text-sm">
               <div className="flex justify-between text-stone-600">
                 <span>Items Subtotal</span>
-                <span>₹{totalAmount}</span>
+                <span>₹{itemsSubtotal}</span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Pan-India Courier Shipping</span>
-                <span className="text-emerald-700 font-semibold">FREE (Special Offer)</span>
+                <span className="font-semibold text-stone-800">₹{deliveryCharge}</span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Taxes & Artisan Packaging</span>

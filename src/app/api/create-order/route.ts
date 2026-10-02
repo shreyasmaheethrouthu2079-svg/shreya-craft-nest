@@ -42,6 +42,10 @@ export async function POST(request: Request) {
       }
     }
 
+    // Add standard ₹40 courier delivery charge
+    const DELIVERY_FEE = 40;
+    totalAmountRupees += DELIVERY_FEE;
+
     if (orderItems.length === 0 || totalAmountRupees <= 0) {
       return NextResponse.json(
         { error: "No valid products found for order" },

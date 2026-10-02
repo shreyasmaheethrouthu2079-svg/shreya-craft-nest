@@ -505,7 +505,7 @@ function TrackOrderContent() {
                   </div>
                   <div className="flex justify-between text-stone-600">
                     <span>Delivery Charge:</span>
-                    <span className="font-semibold text-emerald-700">FREE (Artisan Special)</span>
+                    <span className="font-semibold text-stone-800">₹40 (Standard Express)</span>
                   </div>
                   <div className="flex justify-between text-sm sm:text-base font-bold text-stone-900 pt-2 border-t border-stone-100">
                     <span>Total Amount:</span>

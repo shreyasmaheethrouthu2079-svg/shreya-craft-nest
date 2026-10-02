@@ -54,14 +54,17 @@ export function AmazonCartToast() {
           <p className="text-[11px] text-stone-500 mt-0.5">
             Price: <span className="font-semibold text-stone-800">₹{lastAddedItem.product.price}</span> • Qty: {lastAddedItem.quantity}
           </p>
-          <div className="mt-1 flex items-center gap-2 text-xs">
+          <div className="mt-1 flex items-center justify-between text-xs">
             <span className="text-stone-600">
-              Cart Subtotal ({totalItems}):
+              Items Subtotal ({totalItems}):
             </span>
-            <span className="font-bold text-emerald-800">
+            <span className="font-bold text-stone-900">
               ₹{subtotal}
             </span>
           </div>
+          <p className="text-[10px] text-stone-500 mt-0.5">
+            + ₹40 standard courier delivery
+          </p>
         </div>
       </div>
 
