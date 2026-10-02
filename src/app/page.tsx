@@ -4,7 +4,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TrustBanner } from "@/components/TrustBanner";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { ArtisanalCollectiveShowcase } from "@/components/ArtisanalCollectiveShowcase";
 import {
   Heart,
   Sparkles,
@@ -96,11 +95,12 @@ export default function HomePage() {
                   <div className="absolute -bottom-6 -left-6 w-64 h-64 bg-emerald-200/30 rounded-full blur-2xl -z-10" />
 
                   {/* Main framed photo */}
-                  <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-stone-100 aspect-[4/5]">
+                  <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-stone-100 aspect-square">
                     <Image
-                      src="/products/botanical-ivy-shoulder-bag.jpg"
-                      alt="Artisan hand-stitched botanical shoulder bag by Shreya Crafts Nest"
+                      src="/products/hero-collection.jpg"
+                      alt="Artisanal Fabrics Collective - Handcrafted bags & pouches by Shreya Crafts Nest"
                       fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       priority
                       className="object-cover"
                     />
@@ -139,9 +139,6 @@ export default function HomePage() {
 
         {/* TRUST BANNER: 3-STEP PROCESS */}
         <TrustBanner />
-
-        {/* 3D ARTISANAL COLLECTIVE SHOWCASE */}
-        <ArtisanalCollectiveShowcase />
 
         {/* PRODUCT CATALOG WITH FILTER TABS */}
         <ProductCatalog />

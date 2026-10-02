@@ -1,16 +1,13 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { Star, CheckCircle2, ArrowRight, Sparkles, Rotate3d } from "lucide-react";
+import { Star, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 import { Product } from "@/data/products";
 
 interface ProductCardProps {
   product: Product;
-  onOpen3D?: (product: Product) => void;
 }
 
-export function ProductCard({ product, onOpen3D }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
   const discountPercent = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
   );
@@ -41,16 +38,11 @@ export function ProductCard({ product, onOpen3D }: ProductCardProps) {
             </span>
           </div>
 
-          {/* 3D Inspect Floating Quick Action */}
-          {onOpen3D && (
-            <button
-              onClick={() => onOpen3D(product)}
-              className="absolute top-3 right-3 inline-flex items-center gap-1.5 bg-stone-900/85 hover:bg-amber-800 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-md backdrop-blur-sm transition-all z-10 cursor-pointer group/btn"
-              title="Inspect in 3D Studio"
-            >
-              <Rotate3d className="w-3.5 h-3.5 text-amber-300 group-hover/btn:rotate-180 transition-transform duration-500" />
-              <span>3D View</span>
-            </button>
+          {/* Discount badge */}
+          {discountPercent > 0 && (
+            <div className="absolute top-3 right-3 bg-emerald-700 text-white text-[11px] font-bold px-2 py-0.5 rounded-md shadow-md">
+              Save {discountPercent}%
+            </div>
           )}
         </div>
 
@@ -107,9 +99,9 @@ export function ProductCard({ product, onOpen3D }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Card Footer with Price, 3D Button & Order CTA */}
+      {/* Card Footer with Price & Order CTA */}
       <div className="p-5 sm:p-6 pt-0 border-t border-stone-100 mt-2">
-        <div className="flex items-center justify-between pt-4 gap-2">
+        <div className="flex items-center justify-between pt-4">
           <div>
             <div className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
               Price (Inc. Taxes)
@@ -124,25 +116,13 @@ export function ProductCard({ product, onOpen3D }: ProductCardProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {onOpen3D && (
-              <button
-                onClick={() => onOpen3D(product)}
-                className="p-2.5 rounded-xl border border-stone-200 text-stone-700 hover:text-amber-900 hover:border-amber-400 hover:bg-amber-50/70 transition-all flex items-center justify-center cursor-pointer"
-                title="Inspect bag in 3D"
-              >
-                <Rotate3d className="w-4 h-4 text-amber-700" />
-              </button>
-            )}
-
-            <Link
-              href={`/checkout?productId=${product.id}`}
-              className="inline-flex items-center gap-1.5 bg-amber-700 hover:bg-amber-800 active:scale-95 text-white font-semibold text-sm px-4 sm:px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
-            >
-              <span>Order Now</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </div>
+          <Link
+            href={`/checkout?productId=${product.id}`}
+            className="inline-flex items-center gap-2 bg-amber-700 hover:bg-amber-800 active:scale-95 text-white font-semibold text-sm px-4 sm:px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
+          >
+            <span>Order Now</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </div>
     </article>
