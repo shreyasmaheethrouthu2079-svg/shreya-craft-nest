@@ -118,11 +118,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* TRUST BANNER: 3-STEP PROCESS */}
-        <TrustBanner />
-
         {/* PRODUCT CATALOG WITH FILTER TABS */}
         <ProductCatalog />
+
+        {/* THE ARTISAN PROMISE / TRUST BANNER */}
+        <TrustBanner />
 
 
       </main>
