@@ -15,6 +15,7 @@ export function Footer() {
                   src="/logo-emblem.png"
                   alt="Shreya Craft Nest Logo"
                   fill
+                  sizes="44px"
                   className="object-cover"
                 />
               </div>
