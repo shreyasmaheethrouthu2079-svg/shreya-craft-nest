@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { ShoppingCart, ChevronDown, Check, LogOut, User } from "lucide-react";
+import { ShoppingCart, ChevronDown, Check, LogOut, User, Home, ShoppingBag, Package } from "lucide-react";
 
 export function Navbar() {
   const { totalItems } = useCart();
@@ -305,6 +305,71 @@ export function Navbar() {
               {t("nav.cart")}
             </span>
           </Link>
+        </div>
+      </div>
+
+      {/* QUICK LINKS SUB-NAV BAR (All pages accessible in one single place) */}
+      <div className="bg-[#F5F0E8] border-t border-[#E8E1D5] px-3 sm:px-6 lg:px-8 py-1.5 overflow-x-auto scrollbar-none shadow-2xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-1 sm:gap-4 text-xs font-medium text-stone-700 whitespace-nowrap">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
+            >
+              <Home className="w-3.5 h-3.5 text-amber-800" />
+              <span>Home / Shop</span>
+            </Link>
+
+            <span className="text-stone-300">|</span>
+
+            <Link
+              href="/#catalog"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-stone-600" />
+              <span>All Bags</span>
+            </Link>
+
+            <span className="text-stone-300">|</span>
+
+            <Link
+              href="/signin"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+            >
+              <User className="w-3.5 h-3.5 text-stone-600" />
+              <span>{isLoggedIn ? (user?.name ? `Account (${user.name.split(" ")[0]})` : "Account") : "Sign In / Login"}</span>
+            </Link>
+
+            <span className="text-stone-300">|</span>
+
+            <Link
+              href="/cart"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+            >
+              <ShoppingCart className="w-3.5 h-3.5 text-stone-600" />
+              <span>Cart ({totalItems})</span>
+            </Link>
+
+            <span className="text-stone-300">|</span>
+
+            <Link
+              href="/track-order"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-amber-900 bg-amber-100/60"
+            >
+              <Package className="w-3.5 h-3.5 text-amber-800" />
+              <span>Track Order</span>
+              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
+            </Link>
+          </div>
+
+          <a
+            href="https://wa.me/919876543210"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1 text-[11px] text-emerald-800 font-semibold hover:underline px-2 py-0.5"
+          >
+            <span>💬 WhatsApp Support</span>
+          </a>
         </div>
       </div>
     </header>
