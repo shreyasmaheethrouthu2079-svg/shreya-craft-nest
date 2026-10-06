@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { PRODUCTS } from "@/data/products";
 import {
   X,
   ShoppingBag,
@@ -20,6 +21,7 @@ export function CartDrawer() {
     cart,
     isOpen,
     closeCart,
+    addToCart,
     updateQuantity,
     removeFromCart,
     subtotal,
@@ -74,23 +76,63 @@ export function CartDrawer() {
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
             {cart.length === 0 ? (
-              <div className="text-center py-16 px-4 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-amber-100/70 border border-amber-200/80 flex items-center justify-center mx-auto text-amber-800">
-                  <ShoppingBag className="w-8 h-8 text-amber-700" />
+              <div className="py-4 space-y-5">
+                <div className="text-center space-y-2">
+                  <div className="w-14 h-14 rounded-full bg-amber-100/70 border border-amber-200/80 flex items-center justify-center mx-auto text-amber-800">
+                    <ShoppingBag className="w-7 h-7 text-amber-700" />
+                  </div>
+                  <h3 className="font-serif text-lg font-bold text-stone-800">
+                    Your Shopping Cart is Empty
+                  </h3>
+                  <p className="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
+                    Choose any authentic bag or pouch below and hit <strong className="text-amber-900">"Add to Cart"</strong>:
+                  </p>
                 </div>
-                <h3 className="font-serif text-xl font-bold text-stone-800">
-                  Your nest is empty
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-500 max-w-xs mx-auto leading-relaxed">
-                  Discover bags, pouches, and handmade treasures stitched with care by mom.
-                </p>
-                <button
-                  onClick={closeCart}
-                  className="inline-flex items-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs sm:text-sm px-6 py-3 rounded-xl shadow-md transition-all cursor-pointer"
-                >
-                  <span>Explore Handcrafted Bags</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+
+                {/* Direct Add to Cart Quick Items */}
+                <div className="space-y-3 pt-3 border-t border-stone-200/80">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                      Quick Add to Cart
+                    </span>
+                    <Link
+                      href="/#catalog"
+                      onClick={closeCart}
+                      className="text-xs text-amber-800 hover:underline font-semibold"
+                    >
+                      View All
+                    </Link>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {PRODUCTS.slice(0, 4).map((p) => (
+                      <div
+                        key={p.id}
+                        className="bg-white rounded-xl p-3 border border-stone-200 shadow-2xs flex items-center justify-between gap-3 hover:border-amber-300 transition-colors"
+                      >
+                        <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
+                          <Image src={p.image} alt={p.name} fill sizes="56px" className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-serif text-xs font-bold text-stone-900 truncate">{p.name}</h4>
+                          <span className="text-[10px] text-amber-800 font-semibold">{p.category}</span>
+                          <div className="flex items-baseline gap-1 mt-0.5">
+                            <span className="font-serif text-xs font-bold text-stone-900">₹{p.price}</span>
+                            <span className="text-[10px] text-stone-400 line-through">₹{p.originalPrice}</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => addToCart(p)}
+                          className="inline-flex items-center gap-1 bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer flex-shrink-0"
+                          title={`Add ${p.name} to Cart`}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               cart.map(({ product, quantity }) => (
