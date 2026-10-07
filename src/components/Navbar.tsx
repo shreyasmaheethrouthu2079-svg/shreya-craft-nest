@@ -6,7 +6,22 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { ShoppingCart, ChevronDown, Check, LogOut, User, Home, ShoppingBag, Package } from "lucide-react";
+import {
+  ShoppingCart,
+  ChevronDown,
+  Check,
+  LogOut,
+  User,
+  Home,
+  ShoppingBag,
+  Package,
+  Menu,
+  X,
+  ChevronRight,
+  Truck,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
 
 export function Navbar() {
   const { totalItems } = useCart();
@@ -14,9 +29,22 @@ export function Navbar() {
   const { user, isLoggedIn, logout } = useAuth();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const langContainerRef = useRef<HTMLDivElement>(null);
   const accountContainerRef = useRef<HTMLDivElement>(null);
+
+  // Lock background scrolling when side menu drawer is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMenuOpen]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -41,12 +69,22 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full text-stone-800 font-sans select-none bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#EDE6DD] shadow-xs">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 sm:gap-4 h-[64px]">
-        {/* BRAND LOGO (Matches website cream tone with artisan emblem & smile accent) */}
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 p-1 rounded-lg hover:opacity-90 transition-all flex-shrink-0 group"
-          aria-label="Shreya Craft Nest Home"
-        >
+        {/* BRAND LOGO + MOBILE HAMBURGER BUTTON */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(true)}
+            className="sm:hidden p-1.5 rounded-lg border border-stone-200/90 bg-white/80 hover:bg-white text-stone-800 hover:border-amber-400 shadow-2xs transition-all cursor-pointer"
+            aria-label="Open Navigation Menu"
+          >
+            <Menu className="w-5 h-5 text-stone-800" />
+          </button>
+
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 p-1 rounded-lg hover:opacity-90 transition-all group"
+            aria-label="Shreya Craft Nest Home"
+          >
           <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border border-amber-300 bg-white shadow-xs flex-shrink-0">
             <Image
               src="/logo-emblem.png"
@@ -68,6 +106,7 @@ export function Navbar() {
             </div>
           </div>
         </Link>
+        </div>
 
         {/* RIGHT ACTION ITEMS */}
         <div className="flex items-center gap-2 sm:gap-3">
@@ -308,70 +347,307 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* QUICK LINKS SUB-NAV BAR (All pages accessible in one single place) */}
-      <div className="bg-[#F5F0E8] border-t border-[#E8E1D5] px-3 sm:px-6 lg:px-8 py-1.5 overflow-x-auto scrollbar-none shadow-2xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-1 sm:gap-4 text-xs font-medium text-stone-700 whitespace-nowrap">
-          <div className="flex items-center gap-1 sm:gap-2">
+      {/* 2. THE SIGNATURE MENU BAR (Amazon-Style "☰ All" Strip) */}
+      <nav className="bg-[#F5F0E8] border-t border-[#E8E1D5] text-stone-800 text-xs sm:text-sm font-medium shadow-2xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none h-10">
+          <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+            {/* ☰ ALL / MENU BUTTON */}
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-stone-200/80 active:bg-stone-300/80 transition-colors font-bold text-stone-900 border border-stone-300/70 bg-white/70 shadow-2xs hover:border-amber-400 cursor-pointer"
+              aria-label="Open All Categories Menu"
+            >
+              <Menu className="w-4 h-4 text-stone-900" />
+              <span>All Menu</span>
+            </button>
+
+            <span className="text-stone-300 select-none">|</span>
+
+            {/* Quick Menu Links */}
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
             >
-              <Home className="w-3.5 h-3.5 text-amber-800" />
-              <span>Home / Shop</span>
+              <Home className="w-3.5 h-3.5 text-stone-600" />
+              <span>Home</span>
             </Link>
-
-            <span className="text-stone-300">|</span>
 
             <Link
               href="/#catalog"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
             >
               <ShoppingBag className="w-3.5 h-3.5 text-stone-600" />
-              <span>All Bags</span>
+              <span>Handbags (₹400)</span>
             </Link>
-
-            <span className="text-stone-300">|</span>
 
             <Link
-              href="/signin"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+              href="/#catalog"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
             >
-              <User className="w-3.5 h-3.5 text-stone-600" />
-              <span>{isLoggedIn ? (user?.name ? `Account (${user.name.split(" ")[0]})` : "Account") : "Sign In / Login"}</span>
+              <Sparkles className="w-3.5 h-3.5 text-stone-600" />
+              <span>Pouches (₹100)</span>
             </Link>
-
-            <span className="text-stone-300">|</span>
 
             <Link
               href="/cart"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
             >
               <ShoppingCart className="w-3.5 h-3.5 text-stone-600" />
               <span>Cart ({totalItems})</span>
             </Link>
 
-            <span className="text-stone-300">|</span>
-
             <Link
               href="/track-order"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-amber-900 bg-amber-100/60"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-amber-900 bg-amber-100/70"
             >
               <Package className="w-3.5 h-3.5 text-amber-800" />
               <span>Track Order</span>
-              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
+              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.2 rounded-full font-bold">Live</span>
+            </Link>
+
+            <Link
+              href="/signin"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors"
+            >
+              <User className="w-3.5 h-3.5 text-stone-600" />
+              <span>{isLoggedIn ? (user?.name ? user.name.split(" ")[0] : "Account") : "Sign In"}</span>
             </Link>
           </div>
 
-          <a
-            href="https://wa.me/919876543210"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-1 text-[11px] text-emerald-800 font-semibold hover:underline px-2 py-0.5"
-          >
-            <span>💬 WhatsApp Support</span>
-          </a>
+          {/* Right side helper info */}
+          <div className="flex items-center gap-3 whitespace-nowrap pl-2">
+            <div className="hidden lg:flex items-center gap-1 text-[11px] text-stone-600 font-medium">
+              <Truck className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Courier ₹40</span>
+            </div>
+
+            <a
+              href="https://wa.me/919876543210"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[11px] text-emerald-800 font-semibold hover:underline bg-emerald-50 hover:bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-200 transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">WhatsApp Support</span>
+              <span className="sm:hidden">Support</span>
+            </a>
+          </div>
         </div>
-      </div>
+      </nav>
+
+      {/* 3. SLIDE-OUT SIDE MENU DRAWER (Amazon "☰ All" Drawer) */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity duration-300 cursor-pointer"
+            onClick={() => setIsMenuOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Container from Left */}
+          <div className="fixed inset-y-0 left-0 max-w-full flex pr-10">
+            <div className="w-screen max-w-xs sm:max-w-sm bg-[#FAF8F5] text-stone-800 shadow-2xl flex flex-col justify-between border-r border-[#EDE6DD] animate-in slide-in-from-left duration-300">
+              {/* Drawer Top Header (Hello, Sign In / User Profile) */}
+              <div className="bg-stone-900 text-white p-5 flex items-center justify-between">
+                <Link
+                  href="/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+                >
+                  <div className="w-10 h-10 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-base border-2 border-amber-400">
+                    {isLoggedIn && user ? (
+                      user.name.charAt(0).toUpperCase()
+                    ) : (
+                      <User className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-stone-300 font-medium">Hello,</p>
+                    <p className="text-base font-bold text-white leading-tight">
+                      {isLoggedIn && user ? user.name : "Sign In or Register"}
+                    </p>
+                  </div>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-stone-800 text-stone-300 hover:text-white transition-colors cursor-pointer"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Drawer Scrollable Content */}
+              <div className="flex-1 overflow-y-auto divide-y divide-stone-200/80 text-sm">
+                {/* Section 1: Trending & Artisan Highlights */}
+                <div className="py-4 px-5 space-y-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                    Trending & Highlights
+                  </h3>
+                  <Link
+                    href="/#catalog"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span className="font-semibold">Bestsellers & New Drops</span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                  <Link
+                    href="/#catalog"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span>Handbags & Shoulder Totes (₹400)</span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                  <Link
+                    href="/#catalog"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span>Quilted Travel Pouches (₹100)</span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                  <Link
+                    href="/#catalog"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span>Artisan Mini Bags (₹140)</span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                </div>
+
+                {/* Section 2: Shop by Department */}
+                <div className="py-4 px-5 space-y-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                    Shop By Department
+                  </h3>
+                  <Link
+                    href="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span>Home & Handcrafted Showcase</span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                  <Link
+                    href="/#catalog"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span>All Handcrafted Bags & Pouches</span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                  <Link
+                    href="/cart"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 hover:translate-x-1 transition-all"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>Shopping Cart</span>
+                      {totalItems > 0 && (
+                        <span className="bg-amber-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {totalItems}
+                        </span>
+                      )}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                  <Link
+                    href="/track-order"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-amber-900 font-semibold hover:translate-x-1 transition-all"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span>Track Your Order</span>
+                      <span className="bg-amber-100 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </Link>
+                </div>
+
+                {/* Section 3: Programs & Delivery */}
+                <div className="py-4 px-5 space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                    Studio & Delivery Info
+                  </h3>
+                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/80 space-y-1 text-xs">
+                    <p className="font-bold text-amber-900 flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-amber-800" />
+                      <span>Pan-India Courier (₹40 Flat)</span>
+                    </p>
+                    <p className="text-stone-600">
+                      Dispatched with care & love directly from mom's workshop.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Section 4: Help & Settings */}
+                <div className="py-4 px-5 space-y-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                    Help & Settings
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setShowLanguageDropdown(true);
+                    }}
+                    className="w-full flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 text-left cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>🇮🇳 Language:</span>
+                      <strong className="text-amber-900 uppercase font-bold">{language}</strong>
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </button>
+
+                  <a
+                    href="https://wa.me/919876543210"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between py-2 text-emerald-800 font-semibold hover:underline"
+                  >
+                    <span className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                      <span>Chat on WhatsApp</span>
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  </a>
+
+                  {isLoggedIn ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 py-2 text-red-600 hover:text-red-800 font-semibold text-left pt-3 cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  ) : (
+                    <Link
+                      href="/signin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-between py-2 text-stone-800 hover:text-amber-900 font-semibold"
+                    >
+                      <span>Sign In / Create Account</span>
+                      <ChevronRight className="w-4 h-4 text-stone-400" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
