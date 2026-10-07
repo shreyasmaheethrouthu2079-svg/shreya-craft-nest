@@ -13,12 +13,10 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user, isLoggedIn, logout } = useAuth();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
-  const [showMenuAccountDropdown, setShowMenuAccountDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
   const langContainerRef = useRef<HTMLDivElement>(null);
   const accountContainerRef = useRef<HTMLDivElement>(null);
-  const menuAccountRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -34,12 +32,6 @@ export function Navbar() {
         !accountContainerRef.current.contains(event.target as Node)
       ) {
         setShowAccountDropdown(false);
-      }
-      if (
-        menuAccountRef.current &&
-        !menuAccountRef.current.contains(event.target as Node)
-      ) {
-        setShowMenuAccountDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -316,110 +308,31 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* MENU BAR (Starting with: Account (Customer), Home, All Bags, Cart, Track Order) */}
-      <div className="bg-[#F5F0E8] border-t border-[#E8E1D5] px-3 sm:px-6 lg:px-8 py-1.5 overflow-x-auto scrollbar-none shadow-2xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-1 sm:gap-4 text-xs font-medium text-stone-700 whitespace-nowrap">
-          <div className="flex items-center gap-1 sm:gap-2">
+      {/* MAIN NAVIGATION MENU BAR: Account (Customer) | Home | All Bags | Cart | Track Order */}
+      <nav aria-label="Main navigation menu" className="bg-[#F5EFE6] border-t border-b border-[#E8DFD3] px-3 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-none shadow-2xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-6 text-xs sm:text-sm font-medium text-stone-700 whitespace-nowrap">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* 1. Account (Customer) */}
-            <div
-              ref={menuAccountRef}
-              className="relative"
-              onMouseEnter={() => setShowMenuAccountDropdown(true)}
-              onMouseLeave={() => setShowMenuAccountDropdown(false)}
+            <Link
+              href="/signin"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 hover:bg-white text-stone-800 hover:text-amber-900 border border-stone-200/90 shadow-2xs hover:shadow-xs transition-all font-semibold"
             >
-              <Link
-                href="/signin"
-                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-100/80 hover:bg-amber-100 text-amber-950 font-bold transition-all border border-amber-300 shadow-2xs group cursor-pointer"
-              >
-                <User className="w-3.5 h-3.5 text-amber-800" />
-                <span>
-                  {isLoggedIn && user
-                    ? `Account (Customer: ${user.name.split(" ")[0]})`
-                    : "Account (Customer)"}
-                </span>
-                <ChevronDown className="w-3 h-3 text-amber-700 opacity-70 group-hover:opacity-100" />
-              </Link>
-
-              {/* Account Dropdown */}
-              {showMenuAccountDropdown && (
-                <div className="absolute left-0 top-8 w-60 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-3.5 z-50 animate-in fade-in duration-150">
-                  {isLoggedIn && user ? (
-                    <div className="pb-2.5 mb-2 border-b border-stone-100 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs border border-amber-200">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-stone-900 truncate">
-                          {user.name}
-                        </p>
-                        <p className="text-[10px] text-stone-500 truncate">
-                          Customer Account
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center pb-2.5 mb-2 border-b border-stone-100">
-                      <Link
-                        href="/signin"
-                        onClick={() => setShowMenuAccountDropdown(false)}
-                        className="block w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 text-xs font-bold py-2 rounded-lg border border-[#fcd200] shadow-xs text-center transition-all"
-                      >
-                        Sign in / Login
-                      </Link>
-                      <p className="text-[10px] text-stone-500 mt-1.5">
-                        New customer?{" "}
-                        <Link
-                          href="/signin"
-                          onClick={() => setShowMenuAccountDropdown(false)}
-                          className="text-amber-800 font-semibold hover:underline"
-                        >
-                          Start here.
-                        </Link>
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="py-1 space-y-1.5 text-xs">
-                    <Link
-                      href="/track-order"
-                      onClick={() => setShowMenuAccountDropdown(false)}
-                      className="block px-2 py-1 rounded hover:bg-stone-50 text-stone-700 hover:text-amber-900"
-                    >
-                      📦 Track Your Orders
-                    </Link>
-                    <Link
-                      href="/cart"
-                      onClick={() => setShowMenuAccountDropdown(false)}
-                      className="block px-2 py-1 rounded hover:bg-stone-50 text-stone-700 hover:text-amber-900"
-                    >
-                      🛒 Shopping Cart ({totalItems})
-                    </Link>
-                    {isLoggedIn && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          logout();
-                          setShowMenuAccountDropdown(false);
-                        }}
-                        className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer px-2"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+              <User className="w-4 h-4 text-amber-800" />
+              <span>
+                {isLoggedIn && user
+                  ? `Account (Customer: ${user.name.split(" ")[0]})`
+                  : "Account (Customer)"}
+              </span>
+            </Link>
 
             <span className="text-stone-300">|</span>
 
             {/* 2. Home */}
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium text-stone-700"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-medium"
             >
-              <Home className="w-3.5 h-3.5 text-amber-800" />
+              <Home className="w-4 h-4 text-stone-600" />
               <span>Home</span>
             </Link>
 
@@ -428,9 +341,9 @@ export function Navbar() {
             {/* 3. All Bags */}
             <Link
               href="/#catalog"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium text-stone-700"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-medium"
             >
-              <ShoppingBag className="w-3.5 h-3.5 text-stone-600" />
+              <ShoppingBag className="w-4 h-4 text-stone-600" />
               <span>All Bags</span>
             </Link>
 
@@ -439,9 +352,9 @@ export function Navbar() {
             {/* 4. Cart */}
             <Link
               href="/cart"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium text-stone-700"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-medium"
             >
-              <ShoppingCart className="w-3.5 h-3.5 text-stone-600" />
+              <ShoppingCart className="w-4 h-4 text-stone-600" />
               <span>Cart ({totalItems})</span>
             </Link>
 
@@ -450,11 +363,13 @@ export function Navbar() {
             {/* 5. Track Order */}
             <Link
               href="/track-order"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-amber-900 bg-amber-100/60"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-semibold text-amber-900 bg-amber-100/70 border border-amber-200/80 shadow-2xs"
             >
-              <Package className="w-3.5 h-3.5 text-amber-800" />
+              <Package className="w-4 h-4 text-amber-800" />
               <span>Track Order</span>
-              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
+              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                Live
+              </span>
             </Link>
           </div>
 
@@ -462,12 +377,12 @@ export function Navbar() {
             href="https://wa.me/919876543210"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-1 text-[11px] text-emerald-800 font-semibold hover:underline px-2 py-0.5"
+            className="hidden md:flex items-center gap-1 text-xs text-emerald-800 font-semibold hover:underline px-2.5 py-1"
           >
             <span>💬 WhatsApp Support</span>
           </a>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
