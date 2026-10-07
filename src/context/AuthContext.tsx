@@ -15,10 +15,12 @@ export interface UserProfile {
 interface AuthContextType {
   user: UserProfile | null;
   isLoggedIn: boolean;
+  isLoaded: boolean;
   loginWithPhone: (phone: string, name?: string) => Promise<boolean>;
   loginWithEmail: (email: string, password?: string, name?: string) => Promise<boolean>;
   loginWithOtp: (identifier: string, otp: string, name?: string) => Promise<boolean>;
   register: (name: string, identifier: string, password?: string) => Promise<boolean>;
+  loginAsGuest: () => void;
   logout: () => void;
   sendOtp: (identifier: string) => Promise<{ success: boolean; demoOtp: string }>;
 }
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Load saved session on client mount
   useEffect(() => {
@@ -37,6 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) {
       console.error("Failed to load user session", e);
+    } finally {
+      setIsLoaded(true);
     }
   }, []);
 
@@ -106,6 +111,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginAsGuest = () => {
+    const guestUser: UserProfile = {
+      id: `usr_guest_${Date.now()}`,
+      name: "Guest Customer",
+      isLoggedIn: true,
+      createdAt: new Date().toISOString(),
+    };
+    saveUserSession(guestUser);
+  };
+
   const logout = () => {
     setUser(null);
     try {
@@ -120,10 +135,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isLoggedIn: !!user?.isLoggedIn,
+        isLoaded,
         loginWithPhone,
         loginWithEmail,
         loginWithOtp,
         register,
+        loginAsGuest,
         logout,
         sendOtp,
       }}

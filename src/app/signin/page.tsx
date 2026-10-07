@@ -22,7 +22,32 @@ function SignInContent() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/";
 
-  const { loginWithPhone, loginWithEmail, loginWithOtp, register, user, sendOtp } = useAuth();
+  const {
+    loginWithPhone,
+    loginWithEmail,
+    loginWithOtp,
+    register,
+    user,
+    sendOtp,
+    isLoggedIn,
+    isLoaded,
+    loginAsGuest,
+  } = useAuth();
+
+  // If already logged in, redirect straight to store
+  useEffect(() => {
+    if (isLoaded && isLoggedIn) {
+      router.replace(redirectUrl);
+    }
+  }, [isLoaded, isLoggedIn, redirectUrl, router]);
+
+  const handleGuestContinue = () => {
+    loginAsGuest();
+    setStage("success");
+    setTimeout(() => {
+      router.push(redirectUrl);
+    }, 600);
+  };
 
   // Screen stages: "identifier" | "otp" | "password" | "register" | "success"
   const [stage, setStage] = useState<"identifier" | "otp" | "password" | "register" | "success">("identifier");
@@ -702,6 +727,17 @@ function SignInContent() {
             >
               Create your Shreya Craft Nest account
             </button>
+
+            {/* Quick Guest Explorer option */}
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={handleGuestContinue}
+                className="text-xs text-amber-900/80 hover:text-amber-950 font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
+              >
+                <span>Browse Storefront as Guest Customer →</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

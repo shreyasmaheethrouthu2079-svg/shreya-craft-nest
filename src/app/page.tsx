@@ -1,13 +1,15 @@
 "use client";
 
-import { Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TrustBanner } from "@/components/TrustBanner";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   ArrowRight,
   CheckCircle,
@@ -16,7 +18,44 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
+  const { isLoggedIn, isLoaded } = useAuth();
+  const router = useRouter();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (isLoaded && !isLoggedIn) {
+      router.replace("/signin");
+    }
+  }, [isLoaded, isLoggedIn, router]);
+
+  // While checking auth session or if not logged in, show clean transition
+  if (!isLoaded || !isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-6 text-stone-800">
+        <div className="flex flex-col items-center space-y-4 max-w-sm text-center">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-300 bg-white shadow-md">
+            <Image
+              src="/logo-emblem.png"
+              alt="Shreya Craft Nest Logo"
+              fill
+              sizes="64px"
+              className="object-cover"
+              priority
+            />
+          </div>
+          <div>
+            <h2 className="font-serif text-xl font-bold text-stone-900">
+              Shreya Craft Nest
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">
+              Opening Sign In page...
+            </p>
+          </div>
+          <div className="w-6 h-6 border-2 border-amber-800 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">

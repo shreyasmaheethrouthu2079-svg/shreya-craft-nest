@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +13,7 @@ export function Navbar() {
   const { totalItems } = useCart();
   const { language, setLanguage, t } = useLanguage();
   const { user, isLoggedIn, logout } = useAuth();
+  const router = useRouter();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showMenuAccountDropdown, setShowMenuAccountDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
@@ -285,6 +287,7 @@ export function Navbar() {
                       onClick={() => {
                         logout();
                         setShowAccountDropdown(false);
+                        router.push("/signin");
                       }}
                       className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer"
                     >
@@ -383,6 +386,7 @@ export function Navbar() {
                           onClick={() => {
                             logout();
                             setShowMenuAccountDropdown(false);
+                            router.push("/signin");
                           }}
                           className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer"
                         >
