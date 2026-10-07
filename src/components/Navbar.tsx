@@ -13,10 +13,12 @@ export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const { user, isLoggedIn, logout } = useAuth();
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  const [showMenuAccountDropdown, setShowMenuAccountDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
   const langContainerRef = useRef<HTMLDivElement>(null);
   const accountContainerRef = useRef<HTMLDivElement>(null);
+  const menuAccountContainerRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -32,6 +34,12 @@ export function Navbar() {
         !accountContainerRef.current.contains(event.target as Node)
       ) {
         setShowAccountDropdown(false);
+      }
+      if (
+        menuAccountContainerRef.current &&
+        !menuAccountContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowMenuAccountDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -308,68 +316,167 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* MAIN NAVIGATION MENU BAR: Account (Customer) | Home | All Bags | Cart | Track Order */}
-      <nav aria-label="Main navigation menu" className="bg-[#F5EFE6] border-t border-b border-[#E8DFD3] px-3 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-none shadow-2xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-6 text-xs sm:text-sm font-medium text-stone-700 whitespace-nowrap">
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
+      {/* MENU BAR (Starts with Account (Customer), Home, All Bags, Cart, Track Order) */}
+      <nav
+        aria-label="Store Menu Bar"
+        className="bg-[#F5F0E8] border-t border-[#E8E1D5] px-3 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-none shadow-2xs"
+      >
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-1 sm:gap-4 text-xs sm:text-sm font-medium text-stone-700 whitespace-nowrap">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* 1. Account (Customer) */}
-            <Link
-              href="/signin"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 hover:bg-white text-stone-800 hover:text-amber-900 border border-stone-200/90 shadow-2xs hover:shadow-xs transition-all font-semibold"
+            <div
+              ref={menuAccountContainerRef}
+              className="relative"
+              onMouseEnter={() => setShowMenuAccountDropdown(true)}
+              onMouseLeave={() => setShowMenuAccountDropdown(false)}
             >
-              <User className="w-4 h-4 text-amber-800" />
-              <span>
-                {isLoggedIn && user
-                  ? `Account (Customer: ${user.name.split(" ")[0]})`
-                  : "Account (Customer)"}
-              </span>
-            </Link>
+              <Link
+                href="/signin"
+                onClick={() => setShowMenuAccountDropdown(false)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100/80 hover:bg-amber-200/90 text-amber-950 font-semibold border border-amber-300/80 shadow-2xs transition-all cursor-pointer group"
+                aria-label="Account (Customer)"
+              >
+                <User className="w-3.5 h-3.5 text-amber-900 group-hover:scale-110 transition-transform" />
+                <span>
+                  {isLoggedIn && user
+                    ? `Account (Customer): ${user.name.split(" ")[0]}`
+                    : "Account (Customer)"}
+                </span>
+                <ChevronDown className="w-3 h-3 text-amber-800" />
+              </Link>
 
-            <span className="text-stone-300">|</span>
+              {/* Account Dropdown */}
+              {showMenuAccountDropdown && (
+                <div className="absolute left-0 top-10 w-64 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-4 z-50 animate-in fade-in duration-150">
+                  {isLoggedIn && user ? (
+                    <div>
+                      <div className="pb-3 mb-2 border-b border-stone-100 flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs border border-amber-200">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-stone-900 truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-[10px] text-stone-500 truncate">
+                            {user.email || user.phone}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="py-1 space-y-2 text-xs">
+                        <Link
+                          href="/track-order"
+                          onClick={() => setShowMenuAccountDropdown(false)}
+                          className="block hover:text-amber-800 hover:underline"
+                        >
+                          📦 {t("nav.orders")}
+                        </Link>
+                        <Link
+                          href="/cart"
+                          onClick={() => setShowMenuAccountDropdown(false)}
+                          className="block hover:text-amber-800 hover:underline"
+                        >
+                          🛒 {t("nav.shoppingCart")}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            logout();
+                            setShowMenuAccountDropdown(false);
+                          }}
+                          className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-center pb-3 mb-2 border-b border-stone-100">
+                        <Link
+                          href="/signin"
+                          onClick={() => setShowMenuAccountDropdown(false)}
+                          className="block w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 text-xs font-bold py-2 rounded-lg border border-[#fcd200] shadow-xs text-center transition-all"
+                        >
+                          Sign in
+                        </Link>
+                        <p className="text-[10px] text-stone-500 mt-2">
+                          New customer?{" "}
+                          <Link
+                            href="/signin"
+                            onClick={() => setShowMenuAccountDropdown(false)}
+                            className="text-amber-800 font-semibold hover:underline"
+                          >
+                            Start here.
+                          </Link>
+                        </p>
+                      </div>
+                      <div className="py-1 space-y-2 text-xs">
+                        <Link
+                          href="/track-order"
+                          onClick={() => setShowMenuAccountDropdown(false)}
+                          className="block hover:text-amber-800 hover:underline"
+                        >
+                          📦 Track Existing Order
+                        </Link>
+                        <Link
+                          href="/cart"
+                          onClick={() => setShowMenuAccountDropdown(false)}
+                          className="block hover:text-amber-800 hover:underline"
+                        >
+                          🛒 Shopping Cart
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <span className="text-stone-300 mx-0.5">|</span>
 
             {/* 2. Home */}
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-medium"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
             >
-              <Home className="w-4 h-4 text-stone-600" />
+              <Home className="w-3.5 h-3.5 text-stone-600" />
               <span>Home</span>
             </Link>
 
-            <span className="text-stone-300">|</span>
+            <span className="text-stone-300 mx-0.5">|</span>
 
             {/* 3. All Bags */}
             <Link
               href="/#catalog"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-medium"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
             >
-              <ShoppingBag className="w-4 h-4 text-stone-600" />
+              <ShoppingBag className="w-3.5 h-3.5 text-stone-600" />
               <span>All Bags</span>
             </Link>
 
-            <span className="text-stone-300">|</span>
+            <span className="text-stone-300 mx-0.5">|</span>
 
             {/* 4. Cart */}
             <Link
               href="/cart"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-medium"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
             >
-              <ShoppingCart className="w-4 h-4 text-stone-600" />
+              <ShoppingCart className="w-3.5 h-3.5 text-stone-600" />
               <span>Cart ({totalItems})</span>
             </Link>
 
-            <span className="text-stone-300">|</span>
+            <span className="text-stone-300 mx-0.5">|</span>
 
             {/* 5. Track Order */}
             <Link
               href="/track-order"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/60 hover:text-stone-900 transition-colors font-semibold text-amber-900 bg-amber-100/70 border border-amber-200/80 shadow-2xs"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-stone-900"
             >
-              <Package className="w-4 h-4 text-amber-800" />
+              <Package className="w-3.5 h-3.5 text-amber-800" />
               <span>Track Order</span>
-              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                Live
-              </span>
+              <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
             </Link>
           </div>
 
@@ -377,7 +484,7 @@ export function Navbar() {
             href="https://wa.me/919876543210"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-1 text-xs text-emerald-800 font-semibold hover:underline px-2.5 py-1"
+            className="hidden md:flex items-center gap-1 text-[11px] text-emerald-800 font-semibold hover:underline px-2 py-0.5"
           >
             <span>💬 WhatsApp Support</span>
           </a>
