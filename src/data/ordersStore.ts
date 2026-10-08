@@ -116,3 +116,49 @@ export function findOrderByQuery(query: string): StoredOrder | undefined {
     return matchId || matchPhone;
   });
 }
+
+export function getAllOrders(): StoredOrder[] {
+  const orders = readOrdersFromFile();
+  // Sort by createdAt descending (newest first)
+  return [...orders].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export function updateOrderStatus(
+  orderId: string,
+  updates: {
+    status?: StoredOrder["status"];
+    courierName?: string;
+    trackingNumber?: string;
+    estimatedDelivery?: string;
+    paymentStatus?: string;
+  }
+): StoredOrder | null {
+  const orders = readOrdersFromFile();
+  const index = orders.findIndex((o) => o.orderId === orderId);
+  if (index === -1) return null;
+
+  const existing = orders[index];
+  const updated: StoredOrder = {
+    ...existing,
+    status: updates.status || existing.status,
+    courierName: updates.courierName !== undefined ? updates.courierName : existing.courierName,
+    trackingNumber: updates.trackingNumber !== undefined ? updates.trackingNumber : existing.trackingNumber,
+    estimatedDelivery: updates.estimatedDelivery !== undefined ? updates.estimatedDelivery : existing.estimatedDelivery,
+    paymentStatus: updates.paymentStatus !== undefined ? updates.paymentStatus : existing.paymentStatus,
+  };
+
+  orders[index] = updated;
+  writeOrdersToFile(orders);
+  return updated;
+}
+
+export function deleteOrder(orderId: string): boolean {
+  const orders = readOrdersFromFile();
+  const filtered = orders.filter((o) => o.orderId !== orderId);
+  if (filtered.length === orders.length) return false;
+  writeOrdersToFile(filtered);
+  return true;
+}
+

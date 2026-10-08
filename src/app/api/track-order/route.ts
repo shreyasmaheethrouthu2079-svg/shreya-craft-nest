@@ -30,15 +30,23 @@ export async function GET(request: Request) {
     const now = Date.now();
     const hoursElapsed = (now - createdTime) / (1000 * 3600);
 
-    // Calculate progression
-    let currentStageIndex = 0; // 0: Confirmed, 1: Inspected, 2: Packed, 3: Dispatched, 4: Delivered
+    // Calculate progression: explicit maker status takes strict precedence
+    let currentStageIndex = 0; // 0: Confirmed, 1: Inspected/Stitching, 2: Packed, 3: Dispatched, 4: Delivered
     if (order.status === "DELIVERED") {
       currentStageIndex = 4;
-    } else if (order.status === "DISPATCHED" || hoursElapsed >= 24) {
+    } else if (order.status === "DISPATCHED") {
       currentStageIndex = 3;
-    } else if (order.status === "PACKED" || hoursElapsed >= 12) {
+    } else if (order.status === "PACKED") {
       currentStageIndex = 2;
-    } else if (order.status === "IN_STITCHING" || hoursElapsed >= 2) {
+    } else if (order.status === "IN_STITCHING") {
+      currentStageIndex = 1;
+    } else if (order.status === "ORDER_CONFIRMED") {
+      currentStageIndex = 0;
+    } else if (hoursElapsed >= 24) {
+      currentStageIndex = 3;
+    } else if (hoursElapsed >= 12) {
+      currentStageIndex = 2;
+    } else if (hoursElapsed >= 2) {
       currentStageIndex = 1;
     } else {
       currentStageIndex = 0;

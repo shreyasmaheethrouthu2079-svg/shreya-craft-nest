@@ -22,7 +22,7 @@
     ],
     "totalAmountPaid": 440,
     "currency": "INR",
-    "status": "ORDER_CONFIRMED",
+    "status": "IN_STITCHING",
     "courierName": "Delhivery Express Surface",
     "trackingNumber": "DEL-57354350",
     "estimatedDelivery": "2-3 Business Days",

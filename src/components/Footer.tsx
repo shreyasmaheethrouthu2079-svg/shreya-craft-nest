@@ -63,6 +63,12 @@ export function Footer() {
                   <span className="text-[10px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-800/80">Live</span>
                 </Link>
               </li>
+              <li>
+                <Link href="/admin" className="hover:text-amber-300 text-stone-400 hover:underline transition-colors flex items-center gap-1.5 pt-1">
+                  <span>Maker Studio Admin</span>
+                  <span className="text-[9px] bg-stone-800 text-stone-300 px-1.5 py-0.5 rounded border border-stone-700">PIN Protected</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -94,7 +100,13 @@ export function Footer() {
 
         {/* Bottom divider with UPI logos & copyright */}
         <div className="mt-14 pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>© {new Date().getFullYear()} Shreya Crafts Nest. Hand-stitched with love & devotion.</p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <p>© {new Date().getFullYear()} Shreya Crafts Nest. Hand-stitched with love & devotion.</p>
+            <span className="hidden sm:inline text-stone-700">•</span>
+            <Link href="/admin" className="text-stone-400 hover:text-amber-400 transition-colors underline decoration-dotted">
+              Maker Admin Portal
+            </Link>
+          </div>
           <div className="flex items-center gap-3 text-stone-400">
             <span className="font-semibold text-stone-300">Accepted Payments:</span>
             <span className="bg-stone-800 px-2 py-1 rounded text-emerald-400 font-medium">UPI</span>
