@@ -281,17 +281,6 @@ export function Navbar() {
                     {t("nav.whatsapp")}
                   </a>
 
-                  <div className="pt-1.5 mt-1 border-t border-stone-100">
-                    <Link
-                      href="/admin"
-                      onClick={() => setShowAccountDropdown(false)}
-                      className="flex items-center justify-between text-amber-950 font-semibold hover:underline bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg border border-amber-200/80 transition-colors"
-                    >
-                      <span>👩‍🎨 Seller Studio</span>
-                      <span className="text-[10px] bg-amber-800 text-white px-1.5 py-0.5 rounded font-bold">Admin</span>
-                    </Link>
-                  </div>
-
                   {isLoggedIn && (
                     <button
                       type="button"
@@ -392,16 +381,6 @@ export function Navbar() {
                         >
                           🛒 {t("nav.shoppingCart")}
                         </Link>
-                        <div className="pt-1 mt-1 border-t border-stone-100">
-                          <Link
-                            href="/admin"
-                            onClick={() => setShowMenuAccountDropdown(false)}
-                            className="flex items-center justify-between text-amber-950 font-semibold hover:underline bg-amber-50 hover:bg-amber-100 px-2 py-1.5 rounded-lg border border-amber-200/80 transition-colors"
-                          >
-                            <span>👩‍🎨 Seller Studio</span>
-                            <span className="text-[10px] bg-amber-800 text-white px-1.5 py-0.5 rounded font-bold">Admin</span>
-                          </Link>
-                        </div>
                         <button
                           type="button"
                           onClick={() => {
@@ -452,16 +431,6 @@ export function Navbar() {
                         >
                           🛒 Shopping Cart
                         </Link>
-                        <div className="pt-1 mt-1 border-t border-stone-100">
-                          <Link
-                            href="/admin"
-                            onClick={() => setShowMenuAccountDropdown(false)}
-                            className="flex items-center justify-between text-amber-950 font-semibold hover:underline bg-amber-50 hover:bg-amber-100 px-2 py-1.5 rounded-lg border border-amber-200/80 transition-colors"
-                          >
-                            <span>👩‍🎨 Seller Studio</span>
-                            <span className="text-[10px] bg-amber-800 text-white px-1.5 py-0.5 rounded font-bold">Admin</span>
-                          </Link>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -512,18 +481,6 @@ export function Navbar() {
               <Package className="w-3.5 h-3.5 text-amber-800" />
               <span>Track Order</span>
               <span className="bg-amber-200 text-amber-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
-            </Link>
-
-            <span className="text-stone-300 mx-0.5">|</span>
-
-            {/* 6. Seller / Owner Studio */}
-            <Link
-              href="/admin"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-amber-100 hover:text-amber-950 transition-colors font-semibold text-amber-950 border border-amber-300/90 bg-white/90 shadow-2xs group"
-              title="Open Owner & Seller Admin Studio"
-            >
-              <span className="text-xs group-hover:scale-105 transition-transform">👩‍🎨 Seller Studio</span>
-              <span className="bg-amber-800 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">PIN</span>
             </Link>
           </div>
 
