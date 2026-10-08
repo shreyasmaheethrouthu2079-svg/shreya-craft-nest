@@ -385,10 +385,11 @@ export default function AdminPage() {
 
             <Link
               href="/"
-              className="px-3 py-1.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-950 flex items-center gap-1.5 transition-colors shadow-2xs"
+              title="Return to Customer Shop"
             >
               <ShoppingBag className="w-3.5 h-3.5 text-amber-800" />
-              <span className="hidden sm:inline">View Storefront</span>
+              <span>Back to Shop</span>
             </Link>
 
             <button
