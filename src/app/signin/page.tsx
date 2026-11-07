@@ -517,7 +517,7 @@ function SignInContent() {
                   Continue as Guest →
                 </button>
                 <a
-                  href="https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20help%20signing%20in%20to%20Shreya%20Crafts%20Nest."
+                  href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20help%20signing%20in%20to%20Shreya%20Crafts%20Nest."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-emerald-700 font-semibold hover:underline"
@@ -553,7 +553,7 @@ function SignInContent() {
             Privacy Notice
           </Link>
           <a
-            href="https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
+            href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
             target="_blank"
             rel="noopener noreferrer"
             className="text-emerald-700 hover:underline font-medium"

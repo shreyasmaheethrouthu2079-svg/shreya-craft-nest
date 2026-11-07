@@ -82,7 +82,7 @@ export function Footer() {
             </p>
 
             <a
-              href="https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
+              href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all w-full justify-center"
@@ -93,7 +93,7 @@ export function Footer() {
 
             <div className="flex items-center gap-2 text-xs text-stone-400 pt-1">
               <MapPin className="w-3.5 h-3.5 text-stone-500" />
-              <span>Dispatched with love from India • +91 94937 86989</span>
+              <span>Dispatched with love from India • +91 94917 10704</span>
             </div>
           </div>
         </div>

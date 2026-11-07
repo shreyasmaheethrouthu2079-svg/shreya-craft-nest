@@ -273,7 +273,7 @@ export function Navbar() {
                     {t("nav.allBags")}
                   </Link>
                   <a
-                    href="https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
+                    href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block text-emerald-700 font-semibold hover:underline"
@@ -485,7 +485,7 @@ export function Navbar() {
           </div>
 
           <a
-            href="https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
+            href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:flex items-center gap-1 text-[11px] text-emerald-800 font-semibold hover:underline px-2 py-0.5"
