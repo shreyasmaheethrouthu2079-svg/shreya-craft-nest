@@ -13,7 +13,6 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  Zap,
   Lock,
 } from "lucide-react";
 
@@ -32,8 +31,8 @@ function SignInContent() {
     loginAsGuest,
   } = useAuth();
 
-  // Tabs: "signin" | "register" | "quick"
-  const [activeTab, setActiveTab] = useState<"signin" | "register" | "quick">("signin");
+  // Tabs: "signin" | "register"
+  const [activeTab, setActiveTab] = useState<"signin" | "register">("signin");
 
   // Inputs
   const [identifier, setIdentifier] = useState("");
@@ -101,7 +100,7 @@ function SignInContent() {
       finishLogin(displayName);
     } catch (err) {
       console.error(err);
-      setError("Unable to sign in. Please try again or use 1-click Quick Login.");
+      setError("Unable to sign in. Please verify your mobile number or email and try again.");
       setIsSubmitting(false);
     }
   };
@@ -131,19 +130,7 @@ function SignInContent() {
     }
   };
 
-  // 3. Handle 1-Click Quick Profiles
-  const handleQuickLogin = (demoName: string, demoId: string) => {
-    setError(null);
-    setIsSubmitting(true);
-    if (demoId.includes("@")) {
-      loginWithEmail(demoId, undefined, demoName);
-    } else {
-      loginWithPhone(demoId, demoName);
-    }
-    finishLogin(demoName);
-  };
-
-  // 4. Handle Guest Login
+  // 3. Handle Guest Login
   const handleGuestLogin = () => {
     setIsSubmitting(true);
     loginAsGuest();
@@ -217,7 +204,7 @@ function SignInContent() {
               </div>
 
               {/* Mode Tabs */}
-              <div className="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl mb-5 text-xs font-semibold">
+              <div className="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl mb-5 text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => {
@@ -231,21 +218,6 @@ function SignInContent() {
                   }`}
                 >
                   Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("quick");
-                    setError(null);
-                  }}
-                  className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    activeTab === "quick"
-                      ? "bg-white text-stone-900 shadow-2xs"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  <Zap className="w-3 h-3 text-amber-600" />
-                  <span>1-Click</span>
                 </button>
                 <button
                   type="button"
@@ -381,76 +353,7 @@ function SignInContent() {
                 </form>
               )}
 
-              {/* TAB 2: 1-CLICK INSTANT DEMO LOGIN */}
-              {activeTab === "quick" && (
-                <div className="space-y-3">
-                  <p className="text-xs text-stone-500">
-                    Click any pre-configured customer profile below to sign in instantly with 1-click:
-                  </p>
-
-                  {/* Profile 1 */}
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin("Shreya", "+91 98765 43210")}
-                    disabled={isSubmitting}
-                    className="w-full p-3.5 rounded-2xl border border-amber-300 bg-amber-50/70 hover:bg-amber-100 text-left transition-all flex items-center justify-between cursor-pointer group shadow-2xs hover:shadow-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-200 text-amber-900 font-bold flex items-center justify-center text-sm border border-amber-300">
-                        S
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-stone-900 group-hover:text-amber-900">
-                          Shreya (Customer)
-                        </div>
-                        <div className="text-[11px] text-stone-500">
-                          +91 98765 43210 • Primary Account
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-amber-900 group-hover:translate-x-0.5 transition-transform">
-                      Sign In →
-                    </span>
-                  </button>
-
-                  {/* Profile 2 */}
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin("Priya", "priya@craftnest.in")}
-                    disabled={isSubmitting}
-                    className="w-full p-3.5 rounded-2xl border border-stone-200 bg-white hover:bg-stone-50 text-left transition-all flex items-center justify-between cursor-pointer group shadow-2xs hover:shadow-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-stone-100 text-stone-800 font-bold flex items-center justify-center text-sm border border-stone-300">
-                        P
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-stone-900 group-hover:text-amber-900">
-                          Priya (Handmade Lover)
-                        </div>
-                        <div className="text-[11px] text-stone-500">
-                          priya@craftnest.in • Verified Email
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-stone-700 group-hover:translate-x-0.5 transition-transform">
-                      Sign In →
-                    </span>
-                  </button>
-
-                  {/* Profile 3: Guest */}
-                  <button
-                    type="button"
-                    onClick={handleGuestLogin}
-                    disabled={isSubmitting}
-                    className="w-full p-3 rounded-2xl border border-dashed border-stone-300 hover:border-amber-400 bg-[#FAF8F5] text-stone-700 text-xs font-bold text-center transition-colors cursor-pointer"
-                  >
-                    ✨ Browse Storefront as Guest Customer
-                  </button>
-                </div>
-              )}
-
-              {/* TAB 3: REGISTER NEW USER */}
+              {/* TAB 2: REGISTER NEW USER */}
               {activeTab === "register" && (
                 <form onSubmit={handleRegisterSubmit} className="space-y-4">
                   <div>
