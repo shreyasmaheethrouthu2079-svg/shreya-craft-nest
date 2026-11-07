@@ -75,7 +75,7 @@ export function Footer() {
           {/* Customer Care & WhatsApp */}
           <div className="space-y-4">
             <h3 className="text-xs uppercase tracking-widest text-amber-400 font-semibold">
-              Direct Maker Contact
+              Contact Us
             </h3>
             <p className="text-xs text-stone-400 leading-normal">
               Have a custom color request, bulk gift requirement, or questions about fabric care? Chat directly with maker Sudha Rani!
