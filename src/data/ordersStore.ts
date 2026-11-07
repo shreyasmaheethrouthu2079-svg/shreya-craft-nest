@@ -48,9 +48,9 @@ const INITIAL_SEED_ORDERS: StoredOrder[] = [
     items: [
       {
         id: "olive-bloom-wristlet-pouch",
-        name: "Olive Floral Block-Print Wristlet Mini Bag",
-        category: "Mini Bags",
-        price: 120,
+        name: "Olive Floral Block-Print Wristlet Pouch",
+        category: "Pouches",
+        price: 100,
         quantity: 1,
       },
       {

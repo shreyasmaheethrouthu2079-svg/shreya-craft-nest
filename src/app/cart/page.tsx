@@ -129,7 +129,7 @@ export default function CartPage() {
                         : cat === "Handbags"
                         ? "Handbags (₹400)"
                         : cat === "Mini Bags"
-                        ? "Mini Bags (₹120-₹140)"
+                        ? "Mini Bags (₹140)"
                         : "Pouches (₹100)"}
                     </button>
                   ))}
