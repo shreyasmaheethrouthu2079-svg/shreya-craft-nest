@@ -548,16 +548,16 @@ function TrackOrderContent() {
                     </h4>
                   </div>
                   <p className="text-xs text-emerald-200/90 leading-relaxed mb-4">
-                    Have questions about address modification or urgent dispatch? You can directly contact Mom's studio.
+                    Have questions about address modification or urgent dispatch? You can directly contact Sudha Rani at the studio.
                   </p>
                   <a
-                    href={`https://wa.me/919876543210?text=Hi%20Shreya%2C%20I%20am%20inquiring%20about%20my%20Order%20%23${trackData.order.orderId}`}
+                    href={`https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20am%20inquiring%20about%20my%20Order%20%23${trackData.order.orderId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all w-full"
                   >
                     <MessageCircle className="w-4 h-4 fill-white" />
-                    <span>Direct WhatsApp Inquiry</span>
+                    <span>WhatsApp Sudha Rani</span>
                   </a>
                 </div>
               </div>

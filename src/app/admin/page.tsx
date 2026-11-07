@@ -877,7 +877,7 @@ export default function AdminPage() {
                   <p className="text-stone-700 leading-relaxed">
                     Yelahanka Campus, Bengaluru, Karnataka - 560064
                   </p>
-                  <p className="text-stone-800">Support: +91 98765 43210</p>
+                  <p className="text-stone-800">Support: +91 94937 86989 (Sudha Rani)</p>
                   <p className="text-[10px] text-stone-500">artisan@shreyacraftnest.in</p>
                 </div>
               </div>

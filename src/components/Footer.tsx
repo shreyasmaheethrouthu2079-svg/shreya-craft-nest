@@ -78,22 +78,22 @@ export function Footer() {
               Direct Maker Contact
             </h3>
             <p className="text-xs text-stone-400 leading-normal">
-              Have a custom color request, bulk gift requirement, or questions about fabric care? We reply promptly!
+              Have a custom color request, bulk gift requirement, or questions about fabric care? Chat directly with maker Sudha Rani!
             </p>
 
             <a
-              href="https://wa.me/919876543210?text=Hi%20Shreya%20Crafts%20Nest%2C%20I%20have%20an%20inquiry%20regarding%20your%20products!"
+              href="https://wa.me/919493786989?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all w-full justify-center"
             >
               <MessageCircle className="w-4 h-4 fill-white" />
-              <span>Chat on WhatsApp</span>
+              <span>Chat with Sudha Rani on WhatsApp</span>
             </a>
 
             <div className="flex items-center gap-2 text-xs text-stone-400 pt-1">
               <MapPin className="w-3.5 h-3.5 text-stone-500" />
-              <span>Dispatched with love from India</span>
+              <span>Dispatched with love from India • +91 94937 86989</span>
             </div>
           </div>
         </div>
