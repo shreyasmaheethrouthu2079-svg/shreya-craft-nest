@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ShoppingCart, ChevronDown, Check, LogOut, User, Home, ShoppingBag, Package } from "lucide-react";
 
 export function Navbar() {
-  const { totalItems } = useCart();
+  const { totalItems, openCart } = useCart();
   const { language, setLanguage, t } = useLanguage();
   const { user, isLoggedIn, logout } = useAuth();
   const router = useRouter();
@@ -215,18 +215,31 @@ export function Navbar() {
             {showAccountDropdown && (
               <div className="absolute right-0 top-12 w-60 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-4 z-50 animate-in fade-in duration-150">
                 {isLoggedIn && user ? (
-                  <div className="pb-3 mb-2 border-b border-stone-100 flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs border border-amber-200">
-                      {user.name.charAt(0).toUpperCase()}
+                  <div>
+                    <div className="pb-3 mb-2 border-b border-stone-100 flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs border border-amber-200">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-stone-900 truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-[10px] text-stone-500 truncate">
+                          {user.isGuest ? "Guest Customer" : (user.email || user.phone)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-stone-900 truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-[10px] text-stone-500 truncate">
-                        {user.email || user.phone}
-                      </p>
-                    </div>
+                    {user.isGuest && (
+                      <div className="pb-2 mb-2 border-b border-stone-100">
+                        <Link
+                          href="/signin"
+                          onClick={() => setShowAccountDropdown(false)}
+                          className="block w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 text-xs font-bold py-1.5 rounded-lg border border-[#fcd200] shadow-xs text-center transition-all"
+                        >
+                          Sign In / Register
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center pb-3 mb-2 border-b border-stone-100">
@@ -301,8 +314,9 @@ export function Navbar() {
           </div>
 
           {/* 3. CART (Amazon Trolley with Live Number inside basket matching cream aesthetic) */}
-          <Link
-            href="/cart"
+          <button
+            type="button"
+            onClick={() => openCart()}
             className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200/90 bg-white/80 hover:bg-white hover:border-amber-400 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
             aria-label={`Shopping Cart with ${totalItems} items`}
           >
@@ -315,7 +329,7 @@ export function Navbar() {
             <span className="hidden sm:inline-block text-xs font-bold text-stone-900">
               {t("nav.cart")}
             </span>
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -330,27 +344,30 @@ export function Navbar() {
             <div
               ref={menuAccountContainerRef}
               className="relative"
-              onMouseEnter={() => setShowMenuAccountDropdown(true)}
-              onMouseLeave={() => setShowMenuAccountDropdown(false)}
             >
-              <Link
-                href="/signin"
-                onClick={() => setShowMenuAccountDropdown(false)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100/80 hover:bg-amber-200/90 text-amber-950 font-semibold border border-amber-300/80 shadow-2xs transition-all cursor-pointer group"
+              <button
+                type="button"
+                onClick={() => setShowMenuAccountDropdown((prev) => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100/90 hover:bg-amber-200 text-amber-950 font-semibold border border-amber-300 shadow-2xs transition-all cursor-pointer group"
                 aria-label="Account (Customer)"
+                aria-expanded={showMenuAccountDropdown}
               >
                 <User className="w-3.5 h-3.5 text-amber-900 group-hover:scale-110 transition-transform" />
                 <span>
                   {isLoggedIn && user
-                    ? `Account (Customer): ${user.name.split(" ")[0]}`
+                    ? `Account: ${user.name.split(" ")[0]}`
                     : "Account (Customer)"}
                 </span>
-                <ChevronDown className="w-3 h-3 text-amber-800" />
-              </Link>
+                <ChevronDown
+                  className={`w-3 h-3 text-amber-800 transition-transform duration-200 ${
+                    showMenuAccountDropdown ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
               {/* Account Dropdown */}
               {showMenuAccountDropdown && (
-                <div className="absolute left-0 top-10 w-64 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-4 z-50 animate-in fade-in duration-150">
+                <div className="absolute left-0 top-11 w-64 bg-white text-stone-800 rounded-xl shadow-2xl border border-stone-200/90 p-4 z-50 animate-in fade-in duration-150">
                   {isLoggedIn && user ? (
                     <div>
                       <div className="pb-3 mb-2 border-b border-stone-100 flex items-center gap-2.5">
@@ -362,10 +379,24 @@ export function Navbar() {
                             {user.name}
                           </p>
                           <p className="text-[10px] text-stone-500 truncate">
-                            {user.email || user.phone}
+                            {user.isGuest ? "Guest Customer" : (user.email || user.phone)}
                           </p>
                         </div>
                       </div>
+
+                      {/* If guest, give clear option to sign in / register */}
+                      {user.isGuest && (
+                        <div className="pb-3 mb-2 border-b border-stone-100">
+                          <Link
+                            href="/signin"
+                            onClick={() => setShowMenuAccountDropdown(false)}
+                            className="block w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 text-xs font-bold py-2 rounded-lg border border-[#fcd200] shadow-xs text-center transition-all"
+                          >
+                            Sign In / Register
+                          </Link>
+                        </div>
+                      )}
+
                       <div className="py-1 space-y-2 text-xs">
                         <Link
                           href="/track-order"
@@ -374,13 +405,16 @@ export function Navbar() {
                         >
                           📦 {t("nav.orders")}
                         </Link>
-                        <Link
-                          href="/cart"
-                          onClick={() => setShowMenuAccountDropdown(false)}
-                          className="block hover:text-amber-800 hover:underline"
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMenuAccountDropdown(false);
+                            openCart();
+                          }}
+                          className="block w-full text-left hover:text-amber-800 hover:underline cursor-pointer"
                         >
-                          🛒 {t("nav.shoppingCart")}
-                        </Link>
+                          🛒 {t("nav.shoppingCart")} ({totalItems})
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -403,7 +437,7 @@ export function Navbar() {
                           onClick={() => setShowMenuAccountDropdown(false)}
                           className="block w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 text-xs font-bold py-2 rounded-lg border border-[#fcd200] shadow-xs text-center transition-all"
                         >
-                          Sign in
+                          Sign In
                         </Link>
                         <p className="text-[10px] text-stone-500 mt-2">
                           New customer?{" "}
@@ -424,13 +458,16 @@ export function Navbar() {
                         >
                           📦 Track Existing Order
                         </Link>
-                        <Link
-                          href="/cart"
-                          onClick={() => setShowMenuAccountDropdown(false)}
-                          className="block hover:text-amber-800 hover:underline"
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMenuAccountDropdown(false);
+                            openCart();
+                          }}
+                          className="block w-full text-left hover:text-amber-800 hover:underline cursor-pointer"
                         >
-                          🛒 Shopping Cart
-                        </Link>
+                          🛒 Shopping Cart ({totalItems})
+                        </button>
                       </div>
                     </div>
                   )}
@@ -443,7 +480,13 @@ export function Navbar() {
             {/* 2. Home */}
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
+              onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium cursor-pointer"
             >
               <Home className="w-3.5 h-3.5 text-stone-600" />
               <span>Home</span>
@@ -454,7 +497,16 @@ export function Navbar() {
             {/* 3. All Bags */}
             <Link
               href="/#catalog"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
+              onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  const el = document.getElementById("catalog");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                  }
+                }
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5 text-stone-600" />
               <span>All Bags</span>
@@ -463,20 +515,22 @@ export function Navbar() {
             <span className="text-stone-300 mx-0.5">|</span>
 
             {/* 4. Cart */}
-            <Link
-              href="/cart"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium"
+            <button
+              type="button"
+              onClick={() => openCart()}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium cursor-pointer"
+              aria-label={`Open Cart (${totalItems} items)`}
             >
               <ShoppingCart className="w-3.5 h-3.5 text-stone-600" />
               <span>Cart ({totalItems})</span>
-            </Link>
+            </button>
 
             <span className="text-stone-300 mx-0.5">|</span>
 
             {/* 5. Track Order */}
             <Link
               href="/track-order"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-stone-900"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-semibold text-stone-900 cursor-pointer"
             >
               <Package className="w-3.5 h-3.5 text-amber-800" />
               <span>Track Order</span>

@@ -46,12 +46,12 @@ function SignInContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [successName, setSuccessName] = useState("");
 
-  // If already logged in when visiting, redirect to store immediately
+  // If already logged in as a registered customer, redirect to store immediately (guests can still sign in)
   useEffect(() => {
-    if (isLoaded && isLoggedIn && !isSuccess) {
+    if (isLoaded && isLoggedIn && !user?.isGuest && !isSuccess) {
       window.location.href = redirectUrl;
     }
-  }, [isLoaded, isLoggedIn, redirectUrl, isSuccess]);
+  }, [isLoaded, isLoggedIn, user, redirectUrl, isSuccess]);
 
   // Complete login with instant redirection
   const finishLogin = (customerName: string) => {

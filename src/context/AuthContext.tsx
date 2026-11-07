@@ -8,6 +8,7 @@ export interface UserProfile {
   email?: string;
   phone?: string;
   isLoggedIn: boolean;
+  isGuest?: boolean;
   avatar?: string;
   createdAt: string;
 }
@@ -114,8 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginAsGuest = () => {
     const guestUser: UserProfile = {
       id: `usr_guest_${Date.now()}`,
-      name: "Guest Customer",
+      name: "Guest",
       isLoggedIn: true,
+      isGuest: true,
       createdAt: new Date().toISOString(),
     };
     saveUserSession(guestUser);
