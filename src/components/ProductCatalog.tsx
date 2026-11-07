@@ -95,6 +95,8 @@ export function ProductCatalog() {
               ? t("catalog.catAll")
               : category === "Handbags"
               ? t("catalog.catHandbags")
+              : category === "Mini Bags"
+              ? t("catalog.catMiniBags") || "Mini Bags"
               : category === "Pouches"
               ? t("catalog.catPouches")
               : category === "Accessories"

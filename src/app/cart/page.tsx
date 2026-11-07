@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 export default function CartPage() {
-  const [selectedCat, setSelectedCat] = useState<"All" | "Handbags" | "Pouches">("All");
+  const [selectedCat, setSelectedCat] = useState<"All" | "Handbags" | "Mini Bags" | "Pouches">("All");
   const {
     cart,
     addToCart,
@@ -113,7 +113,7 @@ export default function CartPage() {
 
                 {/* Category Filter Tabs */}
                 <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl border border-stone-200 shadow-2xs">
-                  {(["All", "Handbags", "Pouches"] as const).map((cat) => (
+                  {(["All", "Handbags", "Mini Bags", "Pouches"] as const).map((cat) => (
                     <button
                       key={cat}
                       type="button"
@@ -124,7 +124,13 @@ export default function CartPage() {
                           : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
                       }`}
                     >
-                      {cat === "All" ? "All Designs" : cat === "Handbags" ? "Handbags (₹400)" : "Pouches (₹100)"}
+                      {cat === "All"
+                        ? "All Designs"
+                        : cat === "Handbags"
+                        ? "Handbags (₹400)"
+                        : cat === "Mini Bags"
+                        ? "Mini Bags (₹120-₹140)"
+                        : "Pouches (₹100)"}
                     </button>
                   ))}
                 </div>

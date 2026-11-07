@@ -1,7 +1,7 @@
 export interface Product {
   id: string;
   name: string;
-  category: "Handbags" | "Pouches";
+  category: "Handbags" | "Pouches" | "Mini Bags";
   price: number;
   originalPrice: number;
   description: string;
@@ -151,7 +151,7 @@ export const PRODUCTS: Product[] = [
   {
     id: "indigo-fish-mini-tote",
     name: "Indigo Fish Quilted Mini Handbag",
-    category: "Handbags",
+    category: "Mini Bags",
     price: 140,
     originalPrice: 220,
     description:
@@ -170,11 +170,34 @@ export const PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 61,
   },
+  {
+    id: "olive-bloom-wristlet-pouch",
+    name: "Olive Floral Block-Print Wristlet Mini Bag",
+    category: "Mini Bags",
+    price: 120,
+    originalPrice: 180,
+    description:
+      "Delicate handcrafted olive green and cream botanical floral wristlet mini bag. Features a comfortable wrist carry strap, secure top zipper, and soft inner lining for smartphone, keys, cards, and daily essentials.",
+    features: [
+      "Traditional olive green floral block-print on pure cotton",
+      "Sturdy integrated wristlet strap for convenient hands-free carry",
+      "Smooth glide metallic zipper with fabric puller",
+      "Compact structured profile ideal for quick outings and gifting",
+    ],
+    material: "100% Block-Printed Cotton Canvas",
+    dimensions: "8.5\" W x 5.5\" H x 1.5\" Gusset",
+    image: "/products/olive-bloom-wristlet-pouch.jpg",
+    inStock: true,
+    badge: "New Arrival ₹120",
+    rating: 4.9,
+    reviewsCount: 38,
+  },
 ];
 
 export const CATEGORIES = [
   "All",
   "Handbags",
+  "Mini Bags",
   "Pouches",
 ] as const;
 
