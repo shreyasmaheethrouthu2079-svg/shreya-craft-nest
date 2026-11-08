@@ -14,6 +14,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Lock,
+  LogOut,
 } from "lucide-react";
 
 function SignInContent() {
@@ -29,6 +30,7 @@ function SignInContent() {
     isLoggedIn,
     isLoaded,
     loginAsGuest,
+    logout,
   } = useAuth();
 
   // Tabs: "signin" | "register"
@@ -45,13 +47,6 @@ function SignInContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successName, setSuccessName] = useState("");
-
-  // If already logged in as a registered customer, redirect to store immediately (guests can still sign in)
-  useEffect(() => {
-    if (isLoaded && isLoggedIn && !user?.isGuest && !isSuccess) {
-      window.location.href = redirectUrl;
-    }
-  }, [isLoaded, isLoggedIn, user, redirectUrl, isSuccess]);
 
   // Complete login with instant redirection
   const finishLogin = (customerName: string) => {
@@ -186,6 +181,45 @@ function SignInContent() {
                 </p>
               </div>
               <div className="w-6 h-6 border-2 border-amber-800 border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+            </div>
+          ) : isLoggedIn && user && !user.isGuest ? (
+            /* ACTIVE SESSION WITH DIRECT LOGOUT OPTION */
+            <div className="text-center py-4 space-y-4 animate-in fade-in duration-200">
+              <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-900 border-2 border-amber-300 flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <span className="inline-block text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200 mb-1.5">
+                  ● Active Customer Session
+                </span>
+                <h2 className="text-xl font-serif font-bold text-stone-900">
+                  Signed in as {user.name}
+                </h2>
+                <p className="text-xs text-stone-500 mt-1 truncate max-w-xs mx-auto">
+                  {user.email || user.phone}
+                </p>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <Link
+                  href={redirectUrl}
+                  className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:scale-[0.98] text-stone-900 font-bold text-sm py-3 px-4 rounded-xl border border-[#fcd200] shadow-sm hover:shadow flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <span>Continue Shopping</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                  }}
+                  className="w-full bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs py-2.5 px-4 rounded-xl border border-red-200 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-red-600" />
+                  <span>Log Out of this Account</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div>

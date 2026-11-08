@@ -302,10 +302,15 @@ export function Navbar() {
                         setShowAccountDropdown(false);
                         router.push("/signin");
                       }}
-                      className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs border border-red-200/80 transition-colors flex items-center justify-between cursor-pointer group mt-2"
                     >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Sign Out</span>
+                      <div className="flex items-center gap-2">
+                        <LogOut className="w-3.5 h-3.5 text-red-600 group-hover:scale-110 transition-transform" />
+                        <span>Log Out</span>
+                      </div>
+                      <span className="text-[10px] text-red-500 font-normal">
+                        {user?.isGuest ? "Exit Guest" : "Switch"}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -343,7 +348,7 @@ export function Navbar() {
             {/* 1. Account (Customer) */}
             <div
               ref={menuAccountContainerRef}
-              className="relative"
+              className="relative flex items-center gap-1.5"
             >
               <button
                 type="button"
@@ -364,6 +369,24 @@ export function Navbar() {
                   }`}
                 />
               </button>
+
+              {/* Direct Quick Log Out Button right on Menu Bar */}
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setShowMenuAccountDropdown(false);
+                    setShowAccountDropdown(false);
+                    router.push("/signin");
+                  }}
+                  title="Log Out of your account"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/90 hover:bg-red-50 text-stone-700 hover:text-red-700 font-semibold border border-stone-200 hover:border-red-300 shadow-2xs transition-all text-xs cursor-pointer group"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-stone-500 group-hover:text-red-600 transition-colors" />
+                  <span>Log Out</span>
+                </button>
+              )}
 
               {/* Account Dropdown */}
               {showMenuAccountDropdown && (
@@ -422,10 +445,15 @@ export function Navbar() {
                             setShowMenuAccountDropdown(false);
                             router.push("/signin");
                           }}
-                          className="w-full text-left text-xs font-semibold text-red-600 hover:text-red-800 pt-2 border-t border-stone-100 flex items-center gap-1.5 cursor-pointer"
+                          className="w-full text-left px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs border border-red-200/80 transition-colors flex items-center justify-between cursor-pointer group mt-2"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
-                          <span>Sign Out</span>
+                          <div className="flex items-center gap-2">
+                            <LogOut className="w-3.5 h-3.5 text-red-600 group-hover:scale-110 transition-transform" />
+                            <span>Log Out</span>
+                          </div>
+                          <span className="text-[10px] text-red-500 font-normal">
+                            {user.isGuest ? "Exit Guest" : "Switch"}
+                          </span>
                         </button>
                       </div>
                     </div>
