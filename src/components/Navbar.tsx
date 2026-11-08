@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { ShoppingCart, ChevronDown, Check, LogOut, User, Home, ShoppingBag, Package } from "lucide-react";
+import { ShoppingCart, ChevronDown, Check, LogOut, User, Home, ShoppingBag, Package, Scissors } from "lucide-react";
 
 export function Navbar() {
   const { totalItems, openCart } = useCart();
@@ -518,6 +518,17 @@ export function Navbar() {
             >
               <Home className="w-3.5 h-3.5 text-stone-600" />
               <span>Home</span>
+            </Link>
+
+            <span className="text-stone-300 mx-0.5">|</span>
+
+            {/* 2.5. Bag Designs */}
+            <Link
+              href="/designs"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-stone-200/70 hover:text-stone-900 transition-colors font-medium cursor-pointer"
+            >
+              <Scissors className="w-3.5 h-3.5 text-amber-800" />
+              <span>Bag Designs</span>
             </Link>
 
             <span className="text-stone-300 mx-0.5">|</span>
