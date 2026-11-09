@@ -14,6 +14,7 @@ import {
   ArrowRight,
   CheckCircle,
   ShoppingBag,
+  MessageCircle,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -115,13 +116,13 @@ export default function HomePage() {
               </div>
 
               {/* Right Column: Hero Visual Showcase */}
-              <div className="lg:col-span-5 relative">
+              <div className="lg:col-span-5 relative -mt-4 lg:-mt-8">
                 <div className="relative mx-auto max-w-md lg:max-w-none">
                   {/* Decorative backdrop shapes */}
                   <div className="absolute -top-6 -right-6 w-64 h-64 bg-amber-200/40 rounded-full blur-2xl -z-10" />
                   <div className="absolute -bottom-6 -left-6 w-64 h-64 bg-emerald-200/30 rounded-full blur-2xl -z-10" />
 
-                  {/* Main framed photo */}
+                  {/* Main framed photo (moved somewhat up) */}
                   <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-[#FAF7F2] aspect-square">
                     <Image
                       src="/products/hero-collection.jpg"
@@ -131,6 +132,22 @@ export default function HomePage() {
                       priority
                       className="object-contain p-2"
                     />
+                  </div>
+
+                  {/* Matter from Photo 1 placed beneath the photo */}
+                  <div className="mt-3.5 sm:mt-4 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-md">
+                    <p className="text-xs sm:text-[13px] text-stone-700 font-medium leading-relaxed mb-3">
+                      Have a custom color request, bulk gift requirement, or questions about fabric care? Chat directly with maker Sudha Rani!
+                    </p>
+                    <a
+                      href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20bulk%20orders%20and%20handcrafted%20products!"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all w-full cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4 fill-white" />
+                      <span>Chat directly with maker Sudha Rani</span>
+                    </a>
                   </div>
                 </div>
               </div>
