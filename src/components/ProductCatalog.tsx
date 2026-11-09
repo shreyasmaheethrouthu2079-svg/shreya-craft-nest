@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PRODUCTS, CATEGORIES, CategoryType } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
@@ -11,8 +11,50 @@ export function ProductCatalog() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const querySearch = searchParams.get("search") || "";
+  const queryCat = searchParams.get("category");
 
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>(() => {
+    if (queryCat && (CATEGORIES as readonly string[]).includes(queryCat)) {
+      return queryCat as CategoryType;
+    }
+    return "All";
+  });
+
+  // Sync category when URL search parameter changes
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    if (cat && (CATEGORIES as readonly string[]).includes(cat)) {
+      setSelectedCategory(cat as CategoryType);
+    } else if (!cat) {
+      setSelectedCategory("All");
+    }
+  }, [searchParams]);
+
+  // Listen to instant custom event from navbar/menu drawer
+  useEffect(() => {
+    const handleCategoryEvent = (e: CustomEvent<string>) => {
+      const cat = e.detail;
+      if (cat && (CATEGORIES as readonly string[]).includes(cat)) {
+        setSelectedCategory(cat as CategoryType);
+      }
+    };
+    window.addEventListener("filter-category" as any, handleCategoryEvent);
+    return () => {
+      window.removeEventListener("filter-category" as any, handleCategoryEvent);
+    };
+  }, []);
+
+  const handleSelectCategory = (category: CategoryType) => {
+    setSelectedCategory(category);
+    const params = new URLSearchParams(searchParams.toString());
+    if (category === "All") {
+      params.delete("category");
+    } else {
+      params.set("category", category);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}#catalog` : "/#catalog", { scroll: false });
+  };
 
   const filteredProducts = useMemo(() => {
     return PRODUCTS.filter((p) => {
@@ -105,7 +147,7 @@ export function ProductCatalog() {
           return (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleSelectCategory(category)}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 isActive
                   ? "bg-amber-800 text-white shadow-md shadow-amber-800/20"

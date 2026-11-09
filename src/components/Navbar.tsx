@@ -54,6 +54,21 @@ export function Navbar() {
   const langContainerRef = useRef<HTMLDivElement>(null);
   const accountContainerRef = useRef<HTMLDivElement>(null);
 
+  const selectCategoryAndScroll = (category: string) => {
+    setIsSideMenuOpen(false);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("filter-category", { detail: category }));
+      if (window.location.pathname === "/") {
+        setTimeout(() => {
+          const el = document.getElementById("catalog");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 50);
+      }
+    }
+  };
+
   // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -460,14 +475,8 @@ export function Navbar() {
 
                 {/* All Bags */}
                 <Link
-                  href="/#catalog"
-                  onClick={() => {
-                    setIsSideMenuOpen(false);
-                    if (window.location.pathname === "/") {
-                      const el = document.getElementById("catalog");
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
+                  href="/?category=All#catalog"
+                  onClick={() => selectCategoryAndScroll("All")}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
                 >
                   <ShoppingBag className="w-4 h-4 text-amber-800" />
@@ -509,35 +518,24 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Shop by Department */}
+            {/* Shop by Department (Keep only Travel Pouches per user instruction) */}
             <div className="border-t border-stone-100 pt-4">
               <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
                 Shop Handcrafted
               </h3>
               <div className="space-y-1">
                 <Link
-                  href="/#catalog"
-                  onClick={() => setIsSideMenuOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
+                  href="/?category=Pouches#catalog"
+                  onClick={() => selectCategoryAndScroll("Pouches")}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-amber-50/80 text-xs font-semibold transition-colors group cursor-pointer border border-transparent hover:border-amber-200"
                 >
-                  <span>👜 Handbags</span>
-                  <span className="text-stone-500 font-semibold">₹400</span>
-                </Link>
-                <Link
-                  href="/#catalog"
-                  onClick={() => setIsSideMenuOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
-                >
-                  <span>👛 Mini Bags</span>
-                  <span className="text-stone-500 font-semibold">₹140</span>
-                </Link>
-                <Link
-                  href="/#catalog"
-                  onClick={() => setIsSideMenuOpen(false)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
-                >
-                  <span>👝 Travel Pouches</span>
-                  <span className="text-stone-500 font-semibold">₹100</span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base">👝</span>
+                    <span>Travel Pouches</span>
+                  </div>
+                  <span className="text-amber-900 font-bold bg-amber-100 px-2.5 py-0.5 rounded-md border border-amber-200">
+                    ₹100
+                  </span>
                 </Link>
               </div>
             </div>
