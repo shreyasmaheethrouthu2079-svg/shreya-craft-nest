@@ -75,11 +75,8 @@ export function Footer() {
           {/* Customer Care & WhatsApp */}
           <div className="space-y-4">
             <h3 className="text-xs uppercase tracking-widest text-amber-400 font-semibold">
-              Bulk Orders & Contact
+              Contact & WhatsApp
             </h3>
-            <p className="text-xs text-stone-300 leading-relaxed">
-              We gladly accept bulk orders for weddings, celebrations, and custom gifting. Have a requirement or question? Chat with me directly on WhatsApp!
-            </p>
 
             <a
               href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20bulk%20orders%20and%20handcrafted%20products!"
