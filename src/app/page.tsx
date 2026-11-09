@@ -13,7 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 import {
   ArrowRight,
   CheckCircle,
-  Scissors,
   ShoppingBag,
 } from "lucide-react";
 
@@ -132,21 +131,6 @@ export default function HomePage() {
                       priority
                       className="object-contain p-2"
                     />
-                  </div>
-
-                  {/* Badges placed neatly beneath the image */}
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <div className="bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-sm border border-amber-200/80 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-800">
-                        <Scissors className="w-3 h-3" />
-                      </div>
-                      <span className="font-bold text-stone-900">{t("hero.badge1")}</span>
-                    </div>
-
-                    <div className="bg-stone-900 text-white px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="font-medium">{t("hero.badge2")}</span>
-                    </div>
                   </div>
                 </div>
               </div>
