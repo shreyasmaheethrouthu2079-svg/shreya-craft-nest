@@ -418,12 +418,12 @@ export function Navbar() {
           </button>
 
           <a
-            href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
+            href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20bulk%20orders%20and%20handcrafted%20products!"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold hover:underline px-2 py-0.5"
           >
-            <span>💬 WhatsApp Help: Sudha Rani</span>
+            <span>💬 WhatsApp: Chat with Me</span>
           </a>
         </div>
       </nav>
@@ -573,16 +573,16 @@ export function Navbar() {
             {/* Customer Care WhatsApp */}
             <div className="border-t border-stone-100 pt-4">
               <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
-                Customer Care
+                Bulk Orders & Support
               </h3>
               <a
-                href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
+                href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20bulk%20orders%20and%20handcrafted%20products!"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-700" />
-                <span>WhatsApp Help (Sudha Rani)</span>
+                <span>Chat with Me on WhatsApp</span>
               </a>
             </div>
           </div>

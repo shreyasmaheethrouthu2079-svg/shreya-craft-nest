@@ -78,7 +78,7 @@ export function Footer() {
               Bulk Orders & Contact
             </h3>
             <p className="text-xs text-stone-300 leading-relaxed">
-              We accept bulk orders for return gifts and special events. Have a question or custom request? Chat directly with maker Sudha Rani!
+              We gladly accept bulk orders for weddings, celebrations, and custom gifting. Have a requirement or question? Chat with me directly on WhatsApp!
             </p>
 
             <a
@@ -88,7 +88,7 @@ export function Footer() {
               className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all w-full justify-center"
             >
               <MessageCircle className="w-4 h-4 fill-white" />
-              <span>Chat with Sudha Rani on WhatsApp</span>
+              <span>Chat with Me on WhatsApp</span>
             </a>
 
             <div className="flex items-center gap-2 text-xs text-stone-400 pt-1">
