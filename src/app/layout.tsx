@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartDrawer } from "@/components/CartDrawer";
 import { AmazonCartToast } from "@/components/AmazonCartToast";
+import { JsonLd } from "@/components/JsonLd";
 import "./globals.css";
 
 const serifFont = Playfair_Display({
@@ -20,22 +21,81 @@ const sansFont = Plus_Jakarta_Sans({
   display: "swap",
 });
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "https://shreya-craft-nest.vercel.app");
+
 export const metadata: Metadata = {
-  title: "Shreya Crafts Nest | Handcrafted Bags, Pouches & Hair Accessories",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Shreya Craft Nest | Handcrafted Bags, Pouches & Hair Accessories",
+    template: "%s | Shreya Craft Nest",
+  },
   description:
-    "Handcrafted bags, pouches & hair accessories stitched with love by mom. Small-batch artisan goods, premium cotton, direct UPI payment, and Pan-India delivery.",
+    "Handcrafted cotton bags, pouches & accessories lovingly stitched by mom Sudha Rani. Small-batch artisan goods, premium cotton, direct UPI payment, and Pan-India delivery.",
   keywords: [
+    "Shreya Craft Nest",
     "Shreya Crafts Nest",
-    "Handmade Bags",
+    "Handmade Bags India",
+    "Handcrafted Cotton Bags",
     "Embroidered Shoulder Bag",
-    "Cotton Canvas Tote",
     "Quilted Travel Pouch",
-    "Cotton Scrunchies",
-    "Satin Silk Scrunchies",
+    "Kalamkari Tote Bag",
+    "Indigo Fish Mini Bag",
     "Artisan Textile India",
-    "Handmade with Love",
+    "Handmade with Love by Mom",
+    "Sudha Rani Bags",
+    "Bags under 500",
   ],
-  authors: [{ name: "Shreya Crafts Nest" }],
+  authors: [{ name: "Shreya Craft Nest", url: baseUrl }],
+  creator: "Sudha Rani & Shreya",
+  publisher: "Shreya Craft Nest",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: baseUrl,
+    siteName: "Shreya Craft Nest",
+    title: "Shreya Craft Nest | Handcrafted Bags & Pouches by Mom",
+    description:
+      "Handcrafted cotton bags, pouches & accessories stitched with love by mom Sudha Rani. Handbags ₹400, Mini Bags ₹140, Pouches ₹100. Pan-India delivery.",
+    images: [
+      {
+        url: "/products/botanical-stripe-bag.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Shreya Craft Nest Handcrafted Bags",
+      },
+      {
+        url: "/logo-banner.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Shreya Craft Nest Artisan Goods",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shreya Craft Nest | Handcrafted Bags & Pouches by Mom",
+    description:
+      "Handcrafted cotton bags, pouches & accessories stitched with love by mom Sudha Rani. Handbags ₹400, Mini Bags ₹140, Pouches ₹100.",
+    images: ["/products/botanical-stripe-bag.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: "/logo-emblem.png",
     shortcut: "/logo-emblem.png",
@@ -83,6 +143,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800 antialiased selection:bg-amber-200 selection:text-amber-900">
+        <JsonLd />
         <div id="google_translate_element" style={{ display: "none" }} />
         <LanguageProvider>
           <AuthProvider>
