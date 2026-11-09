@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Mail,
-  Phone,
-  User,
+  ChevronRight,
   CheckCircle2,
-  Sparkles,
   ArrowRight,
+  LogOut,
   ShieldCheck,
   Lock,
-  LogOut,
+  MessageCircle,
+  Phone,
+  Mail,
+  User as UserIcon,
 } from "lucide-react";
 
 function SignInContent() {
@@ -28,12 +29,11 @@ function SignInContent() {
     register,
     user,
     isLoggedIn,
-    isLoaded,
     loginAsGuest,
     logout,
   } = useAuth();
 
-  // Tabs: "signin" | "register"
+  // Mode: "signin" | "register"
   const [activeTab, setActiveTab] = useState<"signin" | "register">("signin");
 
   // Inputs
@@ -41,6 +41,7 @@ function SignInContent() {
   const [name, setName] = useState("");
   const [otpMode, setOtpMode] = useState(false);
   const [otpCode, setOtpCode] = useState("123456");
+  const [showHelp, setShowHelp] = useState(false);
 
   // States
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ function SignInContent() {
     const cleanId = identifier.trim();
 
     if (!cleanId) {
-      setError("Please enter your mobile phone number or email address.");
+      setError("Enter your email or mobile phone number");
       return;
     }
 
@@ -77,7 +78,7 @@ function SignInContent() {
       if (otpMode) {
         // OTP verification
         if (otpCode !== "123456" && otpCode.length !== 6) {
-          setError("Invalid code. Please enter demo verification code: 123456");
+          setError("Invalid verification code. Please enter demo code: 123456");
           setIsSubmitting(false);
           return;
         }
@@ -91,11 +92,13 @@ function SignInContent() {
         }
       }
 
-      const displayName = name.trim() || (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4) || ""}`);
+      const displayName =
+        name.trim() ||
+        (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4) || ""}`);
       finishLogin(displayName);
     } catch (err) {
       console.error(err);
-      setError("Unable to sign in. Please verify your mobile number or email and try again.");
+      setError("Unable to sign in. Please verify your details and try again.");
       setIsSubmitting(false);
     }
   };
@@ -106,11 +109,11 @@ function SignInContent() {
     setError(null);
 
     if (!name.trim()) {
-      setError("Please enter your name.");
+      setError("Enter your name");
       return;
     }
     if (!identifier.trim()) {
-      setError("Please enter your mobile number or email.");
+      setError("Enter your mobile number or email");
       return;
     }
 
@@ -120,7 +123,7 @@ function SignInContent() {
       finishLogin(name.trim());
     } catch (err) {
       console.error(err);
-      setError("Registration failed. Please try again.");
+      setError("Registration failed. Please check your information and try again.");
       setIsSubmitting(false);
     }
   };
@@ -133,20 +136,20 @@ function SignInContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] flex flex-col justify-between text-stone-800 font-sans selection:bg-amber-200 selection:text-amber-900 py-8 px-4">
-      {/* Top Brand Logo */}
-      <div className="w-full flex justify-center pt-2 pb-6">
+    <div className="min-h-screen bg-white sm:bg-[#FAF8F5]/60 flex flex-col justify-between text-[#0f1111] font-sans selection:bg-amber-200 selection:text-amber-900 py-6 px-4">
+      {/* Top Brand Logo (Centered Amazon/Flipkart Header) */}
+      <div className="w-full flex justify-center pt-2 pb-5">
         <Link
           href="/"
-          className="flex items-center gap-2.5 p-1 rounded-lg hover:opacity-90 transition-all group"
-          aria-label="Shreya Craft Nest"
+          className="flex items-center gap-2 p-1 hover:opacity-95 transition-opacity group"
+          aria-label="Shreya Craft Nest Home"
         >
-          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-300 bg-white shadow-xs flex-shrink-0">
+          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-amber-300 bg-white shadow-xs flex-shrink-0">
             <Image
               src="/logo-emblem.png"
-              alt="Shreya Craft Nest"
+              alt="Shreya Craft Nest Logo"
               fill
-              sizes="44px"
+              sizes="40px"
               className="object-cover"
               priority
             />
@@ -156,6 +159,7 @@ function SignInContent() {
               <span>Shreya Craft Nest</span>
               <span className="text-amber-800 text-xs font-sans font-bold ml-0.5">.in</span>
             </div>
+            {/* Amazon-style smile / arc accent */}
             <div className="relative h-1 w-full overflow-hidden mt-0.5">
               <div className="w-full h-2 rounded-full border-b-2 border-amber-500"></div>
             </div>
@@ -163,130 +167,92 @@ function SignInContent() {
         </Link>
       </div>
 
-      {/* Main Authentication Card */}
-      <div className="w-full max-w-[420px] mx-auto">
-        <div className="bg-white rounded-3xl border border-stone-200/90 shadow-md p-6 sm:p-8">
-          {isSuccess ? (
-            /* SUCCESS STATE ANIMATION */
-            <div className="text-center py-6 space-y-4 animate-in zoom-in-95 duration-200">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center mx-auto text-emerald-700 shadow-xs">
-                <CheckCircle2 className="w-9 h-9" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-serif font-bold text-stone-900">
-                  Welcome, {successName}!
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-xs mx-auto">
-                  You are now signed in. Opening your storefront with all bags and cart...
-                </p>
-              </div>
-              <div className="w-6 h-6 border-2 border-amber-800 border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+      {/* Main Container */}
+      <div className="w-full max-w-[360px] mx-auto">
+        {isSuccess ? (
+          /* SUCCESS STATE ANIMATION */
+          <div className="bg-white border border-[#d5d9d9] rounded-lg p-6 sm:p-7 shadow-xs text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center mx-auto text-emerald-700 shadow-xs">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
-          ) : isLoggedIn && user && !user.isGuest ? (
-            /* ACTIVE SESSION WITH DIRECT LOGOUT OPTION */
-            <div className="text-center py-4 space-y-4 animate-in fade-in duration-200">
-              <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-900 border-2 border-amber-300 flex items-center justify-center mx-auto text-xl font-bold shadow-xs">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <span className="inline-block text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200 mb-1.5">
-                  ● Active Customer Session
-                </span>
-                <h2 className="text-xl font-serif font-bold text-stone-900">
-                  Signed in as {user.name}
-                </h2>
-                <p className="text-xs text-stone-500 mt-1 truncate max-w-xs mx-auto">
-                  {user.email || user.phone}
-                </p>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <Link
-                  href={redirectUrl}
-                  className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:scale-[0.98] text-stone-900 font-bold text-sm py-3 px-4 rounded-xl border border-[#fcd200] shadow-sm hover:shadow flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <span>Continue Shopping</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    logout();
-                  }}
-                  className="w-full bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs py-2.5 px-4 rounded-xl border border-red-200 flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5 text-red-600" />
-                  <span>Log Out of this Account</span>
-                </button>
-              </div>
-            </div>
-          ) : (
             <div>
-              {/* Header Badge */}
-              <div className="mb-5">
-                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-100/90 px-3 py-1 rounded-full mb-2 border border-amber-300/60">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-800" />
-                  <span>Customer Access Portal</span>
-                </div>
-                <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
-                  Sign in or Login
-                </h1>
-                <p className="text-xs text-stone-500 mt-1">
-                  Access your orders, saved cart items, and handcrafted bag collection.
-                </p>
-              </div>
+              <h2 className="text-xl font-medium text-[#0f1111]">
+                Welcome, {successName}!
+              </h2>
+              <p className="text-xs text-stone-500 mt-1 max-w-xs mx-auto">
+                Opening your handcrafted bag collection...
+              </p>
+            </div>
+            <div className="w-5 h-5 border-2 border-amber-800 border-t-transparent rounded-full animate-spin mx-auto mt-3" />
+          </div>
+        ) : isLoggedIn && user && !user.isGuest ? (
+          /* ACTIVE SESSION VIEW (Amazon Switch Account View) */
+          <div className="bg-white border border-[#d5d9d9] rounded-lg p-6 sm:p-7 shadow-xs text-center space-y-4 animate-in fade-in duration-200">
+            <div className="w-14 h-14 rounded-full bg-amber-500 text-stone-950 border border-amber-300 flex items-center justify-center mx-auto text-lg font-bold shadow-xs">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <span className="inline-block text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 mb-1">
+                Active Customer Account
+              </span>
+              <h2 className="text-lg font-bold text-[#0f1111]">
+                {user.name}
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5 truncate max-w-xs mx-auto">
+                {user.email || user.phone}
+              </p>
+            </div>
 
-              {/* Mode Tabs */}
-              <div className="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl mb-5 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("signin");
-                    setError(null);
-                  }}
-                  className={`py-2 rounded-lg transition-all cursor-pointer ${
-                    activeTab === "signin"
-                      ? "bg-white text-stone-900 shadow-2xs"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("register");
-                    setError(null);
-                  }}
-                  className={`py-2 rounded-lg transition-all cursor-pointer ${
-                    activeTab === "register"
-                      ? "bg-white text-stone-900 shadow-2xs"
-                      : "text-stone-600 hover:text-stone-900"
-                  }`}
-                >
-                  New User
-                </button>
-              </div>
+            <div className="space-y-2 pt-2">
+              <Link
+                href={redirectUrl}
+                className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] text-[#0f1111] font-medium text-sm py-2 px-4 rounded-lg border border-[#a88734] shadow-xs hover:shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Continue Shopping</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
 
-              {/* Error Alert */}
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="w-full bg-[#f0f2f2] hover:bg-[#e3e6e6] active:bg-[#d8dbdb] text-[#0f1111] font-normal text-xs py-2 px-4 rounded-lg border border-[#d5d9d9] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5 text-stone-600" />
+                <span>Sign out of this account</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            {/* SIGN IN / CREATE ACCOUNT CARD */}
+            <div className="bg-white border border-[#d5d9d9] rounded-lg p-6 sm:p-7 shadow-xs">
+              {/* Error Alert Box (Amazon Red Box with !) */}
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
-                  <span className="font-bold">!</span>
-                  <span>{error}</span>
+                <div className="mb-4 p-3 rounded-lg border border-[#c40000] bg-white flex items-start gap-2.5 shadow-2xs animate-in fade-in duration-150">
+                  <div className="w-4 h-4 rounded-full bg-[#c40000] text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    !
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#c40000]">There was a problem</h4>
+                    <p className="text-xs text-[#0f1111] mt-0.5 leading-snug">{error}</p>
+                  </div>
                 </div>
               )}
 
-              {/* TAB 1: STANDARD SIGN IN */}
+              {/* VIEW 1: SIGN IN (Amazon/Flipkart Style) */}
               {activeTab === "signin" && (
                 <form onSubmit={handleSignInSubmit} className="space-y-4">
-                  {/* Phone / Email Input */}
+                  <h1 className="text-[28px] font-normal text-[#0f1111] leading-tight mb-2">
+                    Sign in
+                  </h1>
+
+                  {/* Primary ID Input */}
                   <div>
                     <label
                       htmlFor="signin-id"
-                      className="block text-xs font-bold text-stone-800 mb-1.5"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
                     >
-                      Mobile Phone Number or Email
+                      Email or mobile phone number
                     </label>
                     <div className="relative flex items-center">
                       <input
@@ -297,32 +263,29 @@ function SignInContent() {
                           setIdentifier(e.target.value);
                           if (error) setError(null);
                         }}
-                        placeholder="e.g. 9876543210 or yourname@gmail.com"
+                        placeholder=""
                         autoFocus
                         required
-                        className="w-full px-3.5 py-2.5 bg-white text-stone-900 text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#f3a847] focus:border-[#f3a847] transition-all shadow-inner"
+                        className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
                       />
-                      <div className="absolute right-3 pointer-events-none text-stone-400">
+                      <div className="absolute right-2.5 pointer-events-none text-stone-400">
                         {identifier.includes("@") ? (
-                          <Mail className="w-4 h-4 text-amber-700" />
+                          <Mail className="w-4 h-4 text-stone-400" />
                         ) : (
-                          <Phone className="w-4 h-4 text-amber-700" />
+                          <Phone className="w-4 h-4 text-stone-400" />
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Customer Name Input (Optional for personalization) */}
+                  {/* Customer Name Input (Amazon Personalization) */}
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label
-                        htmlFor="signin-name"
-                        className="text-xs font-bold text-stone-800"
-                      >
-                        Your Name <span className="text-stone-400 font-normal">(Optional)</span>
-                      </label>
-                      <span className="text-[10px] text-amber-800 font-medium">Shows on Menu Bar</span>
-                    </div>
+                    <label
+                      htmlFor="signin-name"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
+                    >
+                      Your Name <span className="font-normal text-stone-500">(Optional)</span>
+                    </label>
                     <div className="relative flex items-center">
                       <input
                         id="signin-name"
@@ -330,91 +293,151 @@ function SignInContent() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Shreya"
-                        className="w-full px-3.5 py-2 bg-white text-stone-900 text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#f3a847] focus:border-[#f3a847] transition-all shadow-inner"
+                        className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
                       />
-                      <div className="absolute right-3 pointer-events-none text-stone-400">
-                        <User className="w-4 h-4 text-stone-400" />
+                      <div className="absolute right-2.5 pointer-events-none text-stone-400">
+                        <UserIcon className="w-4 h-4 text-stone-400" />
                       </div>
                     </div>
                   </div>
 
-                  {/* OTP Mode Toggle */}
-                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-stone-700">Verification Mode:</span>
+                  {/* Flipkart Fast OTP Verification Mode */}
+                  {otpMode && (
+                    <div className="p-3 bg-amber-50/60 rounded-lg border border-amber-200/90 space-y-2 animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-amber-950">Enter 6-digit OTP:</span>
+                        <span className="text-[11px] text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-mono font-bold">
+                          Demo OTP: 123456
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        placeholder="123456"
+                        maxLength={6}
+                        className="w-full px-3 py-1.5 bg-white text-[#0f1111] text-center font-mono font-bold tracking-widest text-base rounded-[4px] border border-amber-300 focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40"
+                      />
                       <button
                         type="button"
-                        onClick={() => setOtpMode(!otpMode)}
-                        className="text-amber-800 font-bold hover:underline cursor-pointer"
+                        onClick={() => setOtpCode("123456")}
+                        className="text-[11px] text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer block"
                       >
-                        {otpMode ? "✓ Using OTP Mode" : "Switch to OTP Mode"}
+                        Auto-fill demo code (123456)
                       </button>
                     </div>
+                  )}
 
-                    {otpMode && (
-                      <div className="pt-2 border-t border-stone-200">
-                        <div className="flex items-center justify-between text-[11px] mb-1">
-                          <span className="text-stone-500">Demo OTP Code:</span>
-                          <span className="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">123456</span>
-                        </div>
-                        <input
-                          type="text"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          placeholder="Enter 123456"
-                          maxLength={6}
-                          className="w-full px-3 py-1.5 bg-white text-stone-900 text-center font-bold tracking-widest text-sm rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#f3a847]"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Amazon Signature Yellow Action Button */}
+                  {/* Primary Signature Button (Amazon Yellow Button) */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:scale-[0.98] text-stone-900 font-bold text-sm py-3.5 px-4 rounded-xl border border-[#fcd200] shadow-sm hover:shadow transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] border border-[#a88734] rounded-lg py-2 text-sm text-[#0f1111] font-medium shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     {isSubmitting ? (
-                      <div className="w-5 h-5 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <>
-                        <span>Sign In & Enter Store</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
+                      <span>{otpMode ? "Verify & Sign in" : "Continue"}</span>
                     )}
                   </button>
+
+                  {/* Flipkart Style: Sign in with OTP Toggle */}
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setOtpMode(!otpMode)}
+                      className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-medium cursor-pointer"
+                    >
+                      {otpMode ? "Sign in directly (without OTP)" : "Sign in with OTP instead"}
+                    </button>
+                  </div>
+
+                  {/* Conditions & Privacy Notice */}
+                  <p className="text-[12px] text-[#0f1111] leading-relaxed pt-1">
+                    By continuing, you agree to Shreya Craft Nest's{" "}
+                    <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
+                      Conditions of Use
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
+                      Privacy Notice
+                    </Link>
+                    .
+                  </p>
+
+                  {/* Amazon Collapsible: Need help? */}
+                  <div className="pt-2 border-t border-stone-100">
+                    <button
+                      type="button"
+                      onClick={() => setShowHelp((prev) => !prev)}
+                      className="flex items-center gap-1 text-xs text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer group"
+                    >
+                      <ChevronRight
+                        className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                          showHelp ? "rotate-90 text-[#c7511f]" : "text-stone-500"
+                        }`}
+                      />
+                      <span>Need help?</span>
+                    </button>
+
+                    {showHelp && (
+                      <div className="pl-4 pt-2 space-y-1.5 text-xs animate-in fade-in duration-150">
+                        <a
+                          href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20assistance%20signing%20in%20to%20Shreya%20Crafts%20Nest."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 hover:underline font-medium"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>WhatsApp Help (Sudha Rani)</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={handleGuestLogin}
+                          className="block text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer text-left"
+                        >
+                          Explore store as Guest Customer →
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </form>
               )}
 
-              {/* TAB 2: REGISTER NEW USER */}
+              {/* VIEW 2: CREATE ACCOUNT (Amazon Style) */}
               {activeTab === "register" && (
                 <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                  <h1 className="text-[28px] font-normal text-[#0f1111] leading-tight mb-2">
+                    Create Account
+                  </h1>
+
+                  {/* Name Input */}
                   <div>
                     <label
                       htmlFor="reg-name"
-                      className="block text-xs font-bold text-stone-800 mb-1"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
                     >
-                      Your Full Name
+                      Your name
                     </label>
                     <input
                       id="reg-name"
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Shreya Sharma"
+                      placeholder="First and last name"
                       autoFocus
                       required
-                      className="w-full px-3.5 py-2.5 bg-white text-stone-900 text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#f3a847] focus:border-[#f3a847] shadow-inner"
+                      className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
                     />
                   </div>
 
+                  {/* ID Input */}
                   <div>
                     <label
                       htmlFor="reg-id"
-                      className="block text-xs font-bold text-stone-800 mb-1"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
                     >
-                      Mobile Phone Number or Email
+                      Mobile number or email
                     </label>
                     <input
                       id="reg-id"
@@ -423,82 +446,128 @@ function SignInContent() {
                       onChange={(e) => setIdentifier(e.target.value)}
                       placeholder="e.g. 9876543210 or yourname@gmail.com"
                       required
-                      className="w-full px-3.5 py-2.5 bg-white text-stone-900 text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-[#f3a847] focus:border-[#f3a847] shadow-inner"
+                      className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
                     />
                   </div>
 
+                  {/* Legal Notice */}
+                  <p className="text-[12px] text-[#0f1111] leading-relaxed pt-1">
+                    By creating an account, you agree to Shreya Craft Nest's{" "}
+                    <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
+                      Conditions of Use
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
+                      Privacy Notice
+                    </Link>
+                    .
+                  </p>
+
+                  {/* Create Account Action */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:scale-[0.98] text-stone-900 font-bold text-sm py-3.5 px-4 rounded-xl border border-[#fcd200] shadow-sm hover:shadow transition-all cursor-pointer flex items-center justify-center gap-2 mt-2"
+                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] border border-[#a88734] rounded-lg py-2 text-sm text-[#0f1111] font-medium shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     {isSubmitting ? (
-                      <div className="w-5 h-5 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <>
-                        <span>Create Account & Start Shopping</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
+                      <span>Verify & Create Account</span>
                     )}
                   </button>
+
+                  {/* Back to Sign In */}
+                  <div className="pt-3 border-t border-stone-100 text-xs text-[#0f1111]">
+                    <span>Already have an account? </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("signin");
+                        setError(null);
+                      }}
+                      className="text-[#007185] hover:text-[#c7511f] hover:underline font-semibold cursor-pointer"
+                    >
+                      Sign in ▸
+                    </button>
+                  </div>
                 </form>
               )}
+            </div>
 
-              {/* Bottom Quick Guest Link */}
-              <div className="pt-4 mt-5 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+            {/* AMAZON SIGNATURE DIVIDER & CREATE ACCOUNT BUTTON */}
+            {activeTab === "signin" && (
+              <div className="mt-5 space-y-3">
+                {/* Horizontal rule with text */}
+                <div className="relative flex items-center justify-center">
+                  <div className="w-full border-t border-[#e7e7e7]"></div>
+                  <span className="bg-[#FAF8F5]/60 sm:bg-[#FAF8F5]/80 px-2 text-[12px] text-stone-500 whitespace-nowrap">
+                    New to Shreya Craft Nest?
+                  </span>
+                  <div className="w-full border-t border-[#e7e7e7]"></div>
+                </div>
+
+                {/* Secondary Gray Action Button */}
                 <button
                   type="button"
-                  onClick={handleGuestLogin}
-                  className="text-amber-800 font-semibold hover:underline cursor-pointer"
+                  onClick={() => {
+                    setActiveTab("register");
+                    setError(null);
+                  }}
+                  className="w-full bg-[#f0f2f2] hover:bg-[#e3e6e6] active:bg-[#d8dbdb] text-[#0f1111] font-normal text-xs sm:text-sm py-2 rounded-lg border border-[#d5d9d9] shadow-2xs hover:shadow-xs transition-colors cursor-pointer text-center"
                 >
-                  Continue as Guest →
+                  Create your Shreya Craft Nest account
                 </button>
-                <a
-                  href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20help%20signing%20in%20to%20Shreya%20Crafts%20Nest."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-700 font-semibold hover:underline"
-                >
-                  WhatsApp Help (Sudha Rani)
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Security & Authenticity Trust Footer */}
+                {/* Flipkart Fast Guest Option */}
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={handleGuestLogin}
+                    className="text-xs text-stone-500 hover:text-stone-800 hover:underline cursor-pointer"
+                  >
+                    Want to look around first? <strong className="text-stone-800 font-semibold">Explore as Guest →</strong>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Security Trust Badges */}
         <div className="mt-6 flex items-center justify-center gap-4 text-xs text-stone-500">
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-700" />
-            <span>Secure 256-bit Encryption</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <span className="text-[11px]">Secure 256-bit Encryption</span>
           </div>
-          <span>•</span>
+          <span className="text-stone-300">•</span>
           <div className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-amber-700" />
-            <span>Privacy Guaranteed</span>
+            <span className="text-[11px]">Privacy Guaranteed</span>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="w-full max-w-sm mx-auto text-center py-6 text-[11px] text-stone-400 space-y-2 border-t border-stone-200/60 mt-10">
+      {/* AMAZON & FLIPKART STYLE FOOTER */}
+      <footer className="w-full max-w-sm mx-auto text-center py-6 text-[11px] text-stone-500 space-y-2.5 border-t border-[#e7e7e7] mt-8">
         <div className="flex justify-center gap-6">
-          <Link href="/#catalog" className="text-amber-800/80 hover:underline">
+          <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
             Conditions of Use
           </Link>
-          <Link href="/#catalog" className="text-amber-800/80 hover:underline">
+          <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
             Privacy Notice
           </Link>
           <a
             href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
             target="_blank"
             rel="noopener noreferrer"
-            className="text-emerald-700 hover:underline font-medium"
+            className="text-[#007185] hover:text-[#c7511f] hover:underline"
           >
             Help & WhatsApp
           </a>
         </div>
-        <p>© {new Date().getFullYear()} Shreya Crafts Nest. Hand-stitched with love in India.</p>
+        <p className="text-[11px] text-stone-400">
+          © {new Date().getFullYear()}, Shreya Craft Nest.in or its affiliates. Handcrafted with love in India.
+        </p>
       </footer>
     </div>
   );
@@ -508,7 +577,7 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center text-stone-600">
+        <div className="min-h-screen bg-white flex items-center justify-center text-stone-600">
           <div className="w-6 h-6 border-2 border-amber-800 border-t-transparent rounded-full animate-spin" />
         </div>
       }
