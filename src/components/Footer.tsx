@@ -43,12 +43,6 @@ export function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-stone-400">
               <li>
-                <Link href="/designs" className="hover:text-amber-300 text-amber-300/90 font-medium transition-colors flex items-center gap-1.5">
-                  <span>Bag Designs & Blueprints</span>
-                  <span className="text-[10px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-800/80">New</span>
-                </Link>
-              </li>
-              <li>
                 <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
                   Canvas Handbags & Totes
                 </Link>
