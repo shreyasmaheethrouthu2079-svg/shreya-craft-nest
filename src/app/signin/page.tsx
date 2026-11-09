@@ -16,6 +16,10 @@ import {
   Phone,
   Mail,
   User as UserIcon,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Info,
 } from "lucide-react";
 
 function SignInContent() {
@@ -23,27 +27,35 @@ function SignInContent() {
   const redirectUrl = searchParams.get("redirect") || "/";
 
   const {
-    loginWithPhone,
-    loginWithEmail,
+    loginWithPassword,
     loginWithOtp,
     register,
+    resetPassword,
     user,
     isLoggedIn,
     loginAsGuest,
     logout,
   } = useAuth();
 
-  // Mode: "signin" | "register"
-  const [activeTab, setActiveTab] = useState<"signin" | "register">("signin");
+  // Mode: "signin" | "register" | "forgot"
+  const [activeTab, setActiveTab] = useState<"signin" | "register" | "forgot">("signin");
 
   // Inputs
   const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // OTP Mode (Flipkart alternative)
   const [otpMode, setOtpMode] = useState(false);
   const [otpCode, setOtpCode] = useState("123456");
-  const [showHelp, setShowHelp] = useState(false);
 
-  // States
+  // Forgot password inputs
+  const [newPassword, setNewPassword] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("123456");
+
+  // UI States
+  const [showHelp, setShowHelp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -58,7 +70,7 @@ function SignInContent() {
     }, 700);
   };
 
-  // 1. Handle Primary Sign In Form
+  // 1. Handle Primary Sign In with Password Verification
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -72,38 +84,54 @@ function SignInContent() {
     setIsSubmitting(true);
 
     try {
-      const isEmail = cleanId.includes("@");
-      const cleanPhone = cleanId.replace(/\D/g, "");
-
       if (otpMode) {
-        // OTP verification
+        // Flipkart style OTP verification
         if (otpCode !== "123456" && otpCode.length !== 6) {
           setError("Invalid verification code. Please enter demo code: 123456");
           setIsSubmitting(false);
           return;
         }
-        await loginWithOtp(cleanId, otpCode, name || undefined);
+        const success = await loginWithOtp(cleanId, otpCode, name || undefined);
+        if (!success) {
+          setError("OTP verification failed. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
       } else {
-        // Direct instant login
-        if (isEmail) {
-          await loginWithEmail(cleanId, undefined, name || undefined);
-        } else {
-          await loginWithPhone(cleanPhone || cleanId, name || undefined);
+        // Amazon style Password Verification
+        if (!password) {
+          setError("Enter your password");
+          setIsSubmitting(false);
+          return;
+        }
+        if (password.length < 6) {
+          setError("Password must be at least 6 characters");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const res = await loginWithPassword(cleanId, password, name || undefined);
+        if (!res.success) {
+          setError(res.error || "Incorrect password. Please verify your password and try again.");
+          setIsSubmitting(false);
+          return;
         }
       }
 
+      const isEmail = cleanId.includes("@");
+      const cleanPhone = cleanId.replace(/\D/g, "");
       const displayName =
         name.trim() ||
         (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4) || ""}`);
       finishLogin(displayName);
     } catch (err) {
       console.error(err);
-      setError("Unable to sign in. Please verify your details and try again.");
+      setError("Unable to sign in. Please check your credentials and try again.");
       setIsSubmitting(false);
     }
   };
 
-  // 2. Handle Register Form
+  // 2. Handle Register Form with Password Verification
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -116,19 +144,68 @@ function SignInContent() {
       setError("Enter your mobile number or email");
       return;
     }
+    if (!password) {
+      setError("Enter a password");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Passwords must be at least 6 characters.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await register(name.trim(), identifier.trim());
+      const res = await register(name.trim(), identifier.trim(), password);
+      if (!res.success) {
+        setError(res.error || "Registration failed. Please check your information.");
+        setIsSubmitting(false);
+        return;
+      }
       finishLogin(name.trim());
     } catch (err) {
       console.error(err);
-      setError("Registration failed. Please check your information and try again.");
+      setError("Registration failed. Please try again.");
       setIsSubmitting(false);
     }
   };
 
-  // 3. Handle Guest Login
+  // 3. Handle Forgot Password Reset
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!identifier.trim()) {
+      setError("Enter your mobile number or email to reset password");
+      return;
+    }
+    if (forgotOtp !== "123456" && forgotOtp.length !== 6) {
+      setError("Invalid OTP code. Please enter demo OTP: 123456");
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setError("New password must be at least 6 characters.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await resetPassword(identifier.trim(), newPassword);
+      if (!res.success) {
+        setError(res.error || "Could not reset password. Please check your details.");
+        setIsSubmitting(false);
+        return;
+      }
+      // After reset, log them in
+      await loginWithPassword(identifier.trim(), newPassword);
+      finishLogin("Customer");
+    } catch (err) {
+      console.error(err);
+      setError("Password reset failed. Please try again.");
+      setIsSubmitting(false);
+    }
+  };
+
+  // 4. Handle Guest Login
   const handleGuestLogin = () => {
     setIsSubmitting(true);
     loginAsGuest();
@@ -239,7 +316,7 @@ function SignInContent() {
                 </div>
               )}
 
-              {/* VIEW 1: SIGN IN (Amazon/Flipkart Style) */}
+              {/* VIEW 1: SIGN IN WITH PASSWORD VERIFICATION (Amazon Style) */}
               {activeTab === "signin" && (
                 <form onSubmit={handleSignInSubmit} className="space-y-4">
                   <h1 className="text-[28px] font-normal text-[#0f1111] leading-tight mb-2">
@@ -277,6 +354,57 @@ function SignInContent() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Password Verification Field (Amazon Core) */}
+                  {!otpMode && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label
+                          htmlFor="signin-password"
+                          className="text-[13px] font-bold text-[#0f1111]"
+                        >
+                          Password
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab("forgot");
+                            setError(null);
+                          }}
+                          className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer"
+                        >
+                          Forgot Password?
+                        </button>
+                      </div>
+
+                      <div className="relative flex items-center">
+                        <input
+                          id="signin-password"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (error) setError(null);
+                          }}
+                          placeholder="At least 6 characters"
+                          required
+                          className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all pr-8"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2.5 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Customer Name Input (Amazon Personalization) */}
                   <div>
@@ -337,7 +465,7 @@ function SignInContent() {
                     {isSubmitting ? (
                       <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <span>{otpMode ? "Verify & Sign in" : "Continue"}</span>
+                      <span>{otpMode ? "Verify & Sign in" : "Sign in"}</span>
                     )}
                   </button>
 
@@ -348,7 +476,7 @@ function SignInContent() {
                       onClick={() => setOtpMode(!otpMode)}
                       className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-medium cursor-pointer"
                     >
-                      {otpMode ? "Sign in directly (without OTP)" : "Sign in with OTP instead"}
+                      {otpMode ? "Sign in with password instead" : "Sign in with OTP instead"}
                     </button>
                   </div>
 
@@ -382,6 +510,16 @@ function SignInContent() {
 
                     {showHelp && (
                       <div className="pl-4 pt-2 space-y-1.5 text-xs animate-in fade-in duration-150">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab("forgot");
+                            setError(null);
+                          }}
+                          className="block text-[#007185] hover:text-[#c7511f] hover:underline text-left cursor-pointer"
+                        >
+                          Forgot your password?
+                        </button>
                         <a
                           href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20assistance%20signing%20in%20to%20Shreya%20Crafts%20Nest."
                           target="_blank"
@@ -404,7 +542,7 @@ function SignInContent() {
                 </form>
               )}
 
-              {/* VIEW 2: CREATE ACCOUNT (Amazon Style) */}
+              {/* VIEW 2: CREATE ACCOUNT WITH PASSWORD SETUP (Amazon Style) */}
               {activeTab === "register" && (
                 <form onSubmit={handleRegisterSubmit} className="space-y-4">
                   <h1 className="text-[28px] font-normal text-[#0f1111] leading-tight mb-2">
@@ -450,6 +588,45 @@ function SignInContent() {
                     />
                   </div>
 
+                  {/* Password Input with Verification */}
+                  <div>
+                    <label
+                      htmlFor="reg-password"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
+                    >
+                      Password
+                    </label>
+                    <div className="relative flex items-center">
+                      <input
+                        id="reg-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="At least 6 characters"
+                        required
+                        minLength={6}
+                        className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all pr-8"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2.5 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                    {/* Amazon Signature Password Info Note */}
+                    <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1.5">
+                      <Info className="w-3.5 h-3.5 text-[#007185] flex-shrink-0" />
+                      <span>Passwords must be at least 6 characters.</span>
+                    </div>
+                  </div>
+
                   {/* Legal Notice */}
                   <p className="text-[12px] text-[#0f1111] leading-relaxed pt-1">
                     By creating an account, you agree to Shreya Craft Nest's{" "}
@@ -472,7 +649,7 @@ function SignInContent() {
                     {isSubmitting ? (
                       <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <span>Verify & Create Account</span>
+                      <span>Verify mobile number & Create Account</span>
                     )}
                   </button>
 
@@ -488,6 +665,101 @@ function SignInContent() {
                       className="text-[#007185] hover:text-[#c7511f] hover:underline font-semibold cursor-pointer"
                     >
                       Sign in ▸
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* VIEW 3: FORGOT PASSWORD RESET */}
+              {activeTab === "forgot" && (
+                <form onSubmit={handleForgotSubmit} className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="w-5 h-5 text-amber-800" />
+                    <h1 className="text-[24px] font-normal text-[#0f1111] leading-tight">
+                      Password assistance
+                    </h1>
+                  </div>
+
+                  <p className="text-xs text-stone-600 leading-relaxed">
+                    Enter the email address or mobile phone number associated with your Shreya Craft Nest account.
+                  </p>
+
+                  <div>
+                    <label
+                      htmlFor="forgot-id"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
+                    >
+                      Email or mobile phone number
+                    </label>
+                    <input
+                      id="forgot-id"
+                      type="text"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="e.g. 9876543210 or yourname@gmail.com"
+                      required
+                      className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-stone-700">Enter Demo OTP:</span>
+                      <span className="bg-emerald-100 text-emerald-800 font-mono font-bold px-2 py-0.5 rounded">
+                        123456
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      value={forgotOtp}
+                      onChange={(e) => setForgotOtp(e.target.value)}
+                      placeholder="123456"
+                      maxLength={6}
+                      className="w-full px-3 py-1.5 bg-white text-[#0f1111] text-center font-mono font-bold tracking-widest text-sm rounded-[4px] border border-stone-300 focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="forgot-new-pwd"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
+                    >
+                      New Password
+                    </label>
+                    <input
+                      id="forgot-new-pwd"
+                      type={showPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      required
+                      minLength={6}
+                      className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] border border-[#a88734] rounded-lg py-2 text-sm text-[#0f1111] font-medium shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Save Changes & Sign in</span>
+                    )}
+                  </button>
+
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("signin");
+                        setError(null);
+                      }}
+                      className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer"
+                    >
+                      ← Return to Sign in
                     </button>
                   </div>
                 </form>
