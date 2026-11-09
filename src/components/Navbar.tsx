@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -29,6 +30,11 @@ export function Navbar() {
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Lock body scroll and handle Escape key when side menu is open
   useEffect(() => {
@@ -69,7 +75,8 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full text-stone-800 font-sans select-none bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#EDE6DD] shadow-xs">
+    <>
+      <header className="sticky top-0 z-40 w-full text-stone-800 font-sans select-none bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#EDE6DD] shadow-xs">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 sm:gap-4 h-[64px]">
         {/* BRAND LOGO (Matches website cream tone with artisan emblem & smile accent) */}
         <Link
@@ -358,206 +365,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* SLIDE-OVER SIDE DRAWER (All items from the screenshot pushed cleanly into this menu) */}
-      {isSideMenuOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Backdrop overlay */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-            onClick={() => setIsSideMenuOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Drawer Panel */}
-          <aside
-            className="relative w-full max-w-[320px] sm:max-w-[360px] bg-white h-full shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200 overflow-hidden text-stone-800"
-            aria-label="Navigation Drawer"
-          >
-            {/* 1. Drawer Header with User Profile */}
-            <div className="bg-stone-900 text-white p-5 flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-amber-500 text-stone-950 font-bold flex items-center justify-center text-sm flex-shrink-0 shadow-xs border border-amber-300">
-                  {isLoggedIn && user ? user.name.charAt(0).toUpperCase() : <User className="w-5 h-5" />}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-white truncate">
-                    {isLoggedIn && user ? `Hello, ${user.name}` : "Hello, Sign In"}
-                  </p>
-                  <p className="text-[11px] text-amber-300 truncate">
-                    {isLoggedIn && user ? (user.isGuest ? "Guest Customer" : (user.email || user.phone)) : "Welcome to Shreya Craft Nest"}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSideMenuOpen(false)}
-                className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                aria-label="Close menu"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* 2. Drawer Navigation Items (All items from screenshot) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 text-sm">
-              {/* Core Items from screenshot */}
-              <div>
-                <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
-                  Navigation
-                </h3>
-                <div className="space-y-1">
-                  {/* Home */}
-                  <Link
-                    href="/"
-                    onClick={() => {
-                      setIsSideMenuOpen(false);
-                      if (window.location.pathname === "/") {
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }
-                    }}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
-                  >
-                    <Home className="w-4 h-4 text-stone-500" />
-                    <span>Home</span>
-                  </Link>
-
-                  {/* All Bags */}
-                  <Link
-                    href="/#catalog"
-                    onClick={() => {
-                      setIsSideMenuOpen(false);
-                      if (window.location.pathname === "/") {
-                        const el = document.getElementById("catalog");
-                        if (el) el.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
-                  >
-                    <ShoppingBag className="w-4 h-4 text-stone-500" />
-                    <span>All Handcrafted Bags</span>
-                  </Link>
-
-                  {/* Cart */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSideMenuOpen(false);
-                      openCart();
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ShoppingCart className="w-4 h-4 text-stone-500" />
-                      <span>Shopping Cart</span>
-                    </div>
-                    <span className="bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300">
-                      {totalItems} items
-                    </span>
-                  </button>
-
-                  {/* Track Order */}
-                  <Link
-                    href="/track-order"
-                    onClick={() => setIsSideMenuOpen(false)}
-                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Package className="w-4 h-4 text-amber-800" />
-                      <span>Track Your Order</span>
-                    </div>
-                    <span className="bg-amber-200 text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      Live
-                    </span>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Shop by Department */}
-              <div className="border-t border-stone-100 pt-4">
-                <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
-                  Shop Handcrafted
-                </h3>
-                <div className="space-y-1">
-                  <Link
-                    href="/#catalog"
-                    onClick={() => setIsSideMenuOpen(false)}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
-                  >
-                    <span>👜 Handbags</span>
-                    <span className="text-stone-400">₹400</span>
-                  </Link>
-                  <Link
-                    href="/#catalog"
-                    onClick={() => setIsSideMenuOpen(false)}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
-                  >
-                    <span>👛 Mini Bags</span>
-                    <span className="text-stone-400">₹140</span>
-                  </Link>
-                  <Link
-                    href="/#catalog"
-                    onClick={() => setIsSideMenuOpen(false)}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
-                  >
-                    <span>👝 Travel Pouches</span>
-                    <span className="text-stone-400">₹100</span>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Customer Care WhatsApp */}
-              <div className="border-t border-stone-100 pt-4">
-                <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
-                  Customer Care
-                </h3>
-                <a
-                  href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4 text-emerald-700" />
-                  <span>WhatsApp Help (Sudha Rani)</span>
-                </a>
-              </div>
-            </div>
-
-            {/* 3. Drawer Bottom: Account & Log Out (from screenshot) */}
-            <div className="p-4 bg-stone-50 border-t border-stone-200">
-              {isLoggedIn ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-stone-500 px-1">
-                    <span>Account Active</span>
-                    <span className="font-semibold text-stone-800">{user?.name}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      logout();
-                      setIsSideMenuOpen(false);
-                      router.push("/signin");
-                    }}
-                    className="w-full bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs py-2.5 px-4 rounded-xl border border-red-200/90 flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <LogOut className="w-3.5 h-3.5 text-red-600" />
-                    <span>Log Out of Account</span>
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href="/signin"
-                  onClick={() => setIsSideMenuOpen(false)}
-                  className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 font-bold text-xs py-2.5 px-4 rounded-xl border border-[#fcd200] shadow-2xs flex items-center justify-center gap-2 text-center"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>Sign In / Create Account</span>
-                </Link>
-              )}
-            </div>
-          </aside>
-        </div>
-      )}
-
       {/* MENU BAR (Clean Amazon-style bar with All Menu button holding all screenshot items) */}
       <nav
         aria-label="Store Menu Bar"
@@ -659,5 +466,207 @@ export function Navbar() {
         </div>
       </nav>
     </header>
+
+    {/* SLIDE-OVER SIDE DRAWER (Teleported to document.body via Portal to prevent any header clipping) */}
+    {mounted && isSideMenuOpen && createPortal(
+      <div className="fixed inset-0 z-[99999] flex overflow-hidden" role="dialog" aria-modal="true" aria-label="Store Menu">
+        {/* Backdrop overlay */}
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+          onClick={() => setIsSideMenuOpen(false)}
+          aria-hidden="true"
+        />
+
+        {/* Drawer Panel */}
+        <aside
+          className="relative w-full max-w-[320px] sm:max-w-[360px] bg-white h-[100dvh] max-h-[100dvh] shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200 overflow-hidden text-stone-800"
+          aria-label="Navigation Drawer"
+        >
+          {/* 1. Drawer Header with User Profile */}
+          <div className="bg-stone-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-amber-500 text-stone-950 font-bold flex items-center justify-center text-sm flex-shrink-0 shadow-xs border border-amber-300">
+                {isLoggedIn && user ? user.name.charAt(0).toUpperCase() : <User className="w-5 h-5" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white truncate">
+                  {isLoggedIn && user ? `Hello, ${user.name}` : "Hello, Sign In"}
+                </p>
+                <p className="text-[11px] text-amber-300 truncate">
+                  {isLoggedIn && user ? (user.isGuest ? "Guest Customer" : (user.email || user.phone)) : "Welcome to Shreya Craft Nest"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSideMenuOpen(false)}
+              className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Close menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* 2. Drawer Navigation Items (All items from screenshot) */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 text-sm overscroll-contain">
+            {/* Core Items from screenshot */}
+            <div>
+              <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
+                Navigation
+              </h3>
+              <div className="space-y-1">
+                {/* Home */}
+                <Link
+                  href="/"
+                  onClick={() => {
+                    setIsSideMenuOpen(false);
+                    if (window.location.pathname === "/") {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
+                >
+                  <Home className="w-4 h-4 text-amber-800" />
+                  <span>Home</span>
+                </Link>
+
+                {/* All Bags */}
+                <Link
+                  href="/#catalog"
+                  onClick={() => {
+                    setIsSideMenuOpen(false);
+                    if (window.location.pathname === "/") {
+                      const el = document.getElementById("catalog");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
+                >
+                  <ShoppingBag className="w-4 h-4 text-amber-800" />
+                  <span>All Handcrafted Bags</span>
+                </Link>
+
+                {/* Cart */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSideMenuOpen(false);
+                    openCart();
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <ShoppingCart className="w-4 h-4 text-amber-800" />
+                    <span>Shopping Cart</span>
+                  </div>
+                  <span className="bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300">
+                    {totalItems} items
+                  </span>
+                </button>
+
+                {/* Track Order */}
+                <Link
+                  href="/track-order"
+                  onClick={() => setIsSideMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Package className="w-4 h-4 text-amber-800" />
+                    <span>Track Your Order</span>
+                  </div>
+                  <span className="bg-amber-200 text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    Live
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Shop by Department */}
+            <div className="border-t border-stone-100 pt-4">
+              <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
+                Shop Handcrafted
+              </h3>
+              <div className="space-y-1">
+                <Link
+                  href="/#catalog"
+                  onClick={() => setIsSideMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
+                >
+                  <span>👜 Handbags</span>
+                  <span className="text-stone-500 font-semibold">₹400</span>
+                </Link>
+                <Link
+                  href="/#catalog"
+                  onClick={() => setIsSideMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
+                >
+                  <span>👛 Mini Bags</span>
+                  <span className="text-stone-500 font-semibold">₹140</span>
+                </Link>
+                <Link
+                  href="/#catalog"
+                  onClick={() => setIsSideMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium"
+                >
+                  <span>👝 Travel Pouches</span>
+                  <span className="text-stone-500 font-semibold">₹100</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Customer Care WhatsApp */}
+            <div className="border-t border-stone-100 pt-4">
+              <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
+                Customer Care
+              </h3>
+              <a
+                href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-700" />
+                <span>WhatsApp Help (Sudha Rani)</span>
+              </a>
+            </div>
+          </div>
+
+          {/* 3. Drawer Bottom: Account & Log Out (from screenshot) */}
+          <div className="p-4 bg-stone-50 border-t border-stone-200 shrink-0">
+            {isLoggedIn ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-stone-500 px-1">
+                  <span>Account Active</span>
+                  <span className="font-semibold text-stone-800">{user?.name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setIsSideMenuOpen(false);
+                    router.push("/signin");
+                  }}
+                  className="w-full bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs py-2.5 px-4 rounded-xl border border-red-200/90 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-red-600" />
+                  <span>Log Out of Account</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/signin"
+                onClick={() => setIsSideMenuOpen(false)}
+                className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-stone-900 font-bold text-xs py-2.5 px-4 rounded-xl border border-[#fcd200] shadow-2xs flex items-center justify-center gap-2 text-center"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Sign In / Create Account</span>
+              </Link>
+            )}
+          </div>
+        </aside>
+      </div>,
+      document.body
+    )}
+  </>
   );
 }
