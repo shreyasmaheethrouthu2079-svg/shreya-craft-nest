@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLanguage, LANGUAGES } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { CategoryType } from "@/data/products";
 import {
   ShoppingCart,
   ChevronDown,
@@ -51,23 +52,41 @@ export function Navbar() {
     }
   }, [isSideMenuOpen]);
 
-  const langContainerRef = useRef<HTMLDivElement>(null);
-  const accountContainerRef = useRef<HTMLDivElement>(null);
-
-  const selectCategoryAndScroll = (category: string) => {
+  const handleCategoryNavigation = (cat: CategoryType) => {
     setIsSideMenuOpen(false);
+
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("filter-category", { detail: category }));
       if (window.location.pathname === "/") {
+        // 1. Dispatch custom event so ProductCatalog updates category filter instantly
+        window.dispatchEvent(
+          new CustomEvent("catalog-filter-category", { detail: cat })
+        );
+
+        // 2. Update URL query without full page reload
+        const url = new URL(window.location.href);
+        if (cat === "All") {
+          url.searchParams.delete("category");
+        } else {
+          url.searchParams.set("category", cat);
+        }
+        url.hash = "catalog";
+        window.history.pushState({}, "", url.toString());
+
+        // 3. Scroll smoothly to catalog section
         setTimeout(() => {
           const el = document.getElementById("catalog");
           if (el) {
-            el.scrollIntoView({ behavior: "smooth" });
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
           }
-        }, 50);
+        }, 60);
+      } else {
+        router.push(cat === "All" ? "/#catalog" : `/?category=${encodeURIComponent(cat)}#catalog`);
       }
     }
   };
+
+  const langContainerRef = useRef<HTMLDivElement>(null);
+  const accountContainerRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -474,14 +493,14 @@ export function Navbar() {
                 </Link>
 
                 {/* All Bags */}
-                <Link
-                  href="/?category=All#catalog"
-                  onClick={() => selectCategoryAndScroll("All")}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors"
+                <button
+                  type="button"
+                  onClick={() => handleCategoryNavigation("All")}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-stone-100 font-medium transition-colors text-left cursor-pointer"
                 >
                   <ShoppingBag className="w-4 h-4 text-amber-800" />
                   <span>All Handcrafted Bags</span>
-                </Link>
+                </button>
 
                 {/* Cart */}
                 <button
@@ -518,25 +537,36 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Shop by Department (Keep only Travel Pouches per user instruction) */}
+            {/* Shop by Department */}
             <div className="border-t border-stone-100 pt-4">
               <h3 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2">
                 Shop Handcrafted
               </h3>
               <div className="space-y-1">
-                <Link
-                  href="/?category=Pouches#catalog"
-                  onClick={() => selectCategoryAndScroll("Pouches")}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-amber-50/80 text-xs font-semibold transition-colors group cursor-pointer border border-transparent hover:border-amber-200"
+                <button
+                  type="button"
+                  onClick={() => handleCategoryNavigation("Handbags")}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-base">👝</span>
-                    <span>Travel Pouches</span>
-                  </div>
-                  <span className="text-amber-900 font-bold bg-amber-100 px-2.5 py-0.5 rounded-md border border-amber-200">
-                    ₹100
-                  </span>
-                </Link>
+                  <span>👜 Handbags</span>
+                  <span className="text-stone-500 font-semibold">₹400</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCategoryNavigation("Mini Bags")}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium cursor-pointer text-left"
+                >
+                  <span>👛 Mini Bags</span>
+                  <span className="text-stone-500 font-semibold">₹140</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCategoryNavigation("Pouches")}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium cursor-pointer text-left"
+                >
+                  <span>👝 Pouches</span>
+                  <span className="text-stone-500 font-semibold">₹100</span>
+                </button>
               </div>
             </div>
 

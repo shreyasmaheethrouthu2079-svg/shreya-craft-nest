@@ -43,17 +43,17 @@ export function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-stone-400">
               <li>
-                <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
+                <Link href="/?category=Handbags#catalog" className="hover:text-amber-300 transition-colors">
                   Canvas Handbags & Totes
                 </Link>
               </li>
               <li>
-                <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
-                  Quilted Travel Pouches
+                <Link href="/?category=Pouches#catalog" className="hover:text-amber-300 transition-colors">
+                  Handcrafted Pouches
                 </Link>
               </li>
               <li>
-                <Link href="/#catalog" className="hover:text-amber-300 transition-colors">
+                <Link href="/?category=Mini%20Bags#catalog" className="hover:text-amber-300 transition-colors">
                   Artisan Quilted Mini Bags
                 </Link>
               </li>

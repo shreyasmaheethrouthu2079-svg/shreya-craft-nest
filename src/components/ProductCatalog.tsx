@@ -11,49 +11,49 @@ export function ProductCatalog() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const querySearch = searchParams.get("search") || "";
-  const queryCat = searchParams.get("category");
+  const queryCategory = searchParams.get("category");
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(() => {
-    if (queryCat && (CATEGORIES as readonly string[]).includes(queryCat)) {
-      return queryCat as CategoryType;
+    if (queryCategory && (CATEGORIES as readonly string[]).includes(queryCategory)) {
+      return queryCategory as CategoryType;
     }
     return "All";
   });
 
-  // Sync category when URL search parameter changes
+  // Sync when queryCategory changes in the URL (navigation or browser back/forward)
   useEffect(() => {
-    const cat = searchParams.get("category");
-    if (cat && (CATEGORIES as readonly string[]).includes(cat)) {
-      setSelectedCategory(cat as CategoryType);
-    } else if (!cat) {
+    if (queryCategory && (CATEGORIES as readonly string[]).includes(queryCategory)) {
+      setSelectedCategory(queryCategory as CategoryType);
+    } else if (!queryCategory) {
       setSelectedCategory("All");
     }
-  }, [searchParams]);
+  }, [queryCategory]);
 
-  // Listen to instant custom event from navbar/menu drawer
+  // Sync with custom event dispatched from the Navbar side menu drawer
   useEffect(() => {
-    const handleCategoryEvent = (e: CustomEvent<string>) => {
-      const cat = e.detail;
-      if (cat && (CATEGORIES as readonly string[]).includes(cat)) {
-        setSelectedCategory(cat as CategoryType);
+    const handleCategoryEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<CategoryType>;
+      if (customEvent.detail && (CATEGORIES as readonly string[]).includes(customEvent.detail)) {
+        setSelectedCategory(customEvent.detail);
       }
     };
-    window.addEventListener("filter-category" as any, handleCategoryEvent);
+    window.addEventListener("catalog-filter-category", handleCategoryEvent);
     return () => {
-      window.removeEventListener("filter-category" as any, handleCategoryEvent);
+      window.removeEventListener("catalog-filter-category", handleCategoryEvent);
     };
   }, []);
 
-  const handleSelectCategory = (category: CategoryType) => {
-    setSelectedCategory(category);
-    const params = new URLSearchParams(searchParams.toString());
-    if (category === "All") {
-      params.delete("category");
-    } else {
-      params.set("category", category);
+  const handleSelectCategory = (cat: CategoryType) => {
+    setSelectedCategory(cat);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (cat === "All") {
+        url.searchParams.delete("category");
+      } else {
+        url.searchParams.set("category", cat);
+      }
+      window.history.replaceState({}, "", url.toString());
     }
-    const qs = params.toString();
-    router.replace(qs ? `/?${qs}#catalog` : "/#catalog", { scroll: false });
   };
 
   const filteredProducts = useMemo(() => {
@@ -73,7 +73,11 @@ export function ProductCatalog() {
   }, [selectedCategory, querySearch]);
 
   const clearSearch = () => {
-    router.push("/#catalog");
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("search");
+      router.push(url.pathname + url.search + "#catalog");
+    }
   };
 
   const { t } = useLanguage();
@@ -175,7 +179,7 @@ export function ProductCatalog() {
           </p>
           <button
             onClick={() => {
-              setSelectedCategory("All");
+              handleSelectCategory("All");
               clearSearch();
             }}
             className="mt-4 text-xs font-semibold text-amber-700 underline underline-offset-4 cursor-pointer"
