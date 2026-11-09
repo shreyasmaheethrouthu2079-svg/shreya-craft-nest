@@ -75,14 +75,14 @@ export function Footer() {
           {/* Customer Care & WhatsApp */}
           <div className="space-y-4">
             <h3 className="text-xs uppercase tracking-widest text-amber-400 font-semibold">
-              Contact Us
+              Bulk Orders & Contact
             </h3>
-            <p className="text-xs text-stone-400 leading-normal">
-              Have a custom color request, bulk gift requirement, or questions about fabric care? Chat directly with maker Sudha Rani!
+            <p className="text-xs text-stone-300 leading-relaxed">
+              We accept bulk orders for return gifts and special events. Have a question or custom request? Chat directly with maker Sudha Rani!
             </p>
 
             <a
-              href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest%20products!"
+              href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20bulk%20orders%20and%20handcrafted%20products!"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all w-full justify-center"
