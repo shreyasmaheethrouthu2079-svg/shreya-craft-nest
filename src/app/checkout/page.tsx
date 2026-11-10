@@ -19,11 +19,7 @@ import {
   HeartHandshake,
   AlertCircle,
   ShoppingBag,
-  Banknote,
-  QrCode,
-  CreditCard,
-  Copy,
-  Check,
+  MessageCircle,
 } from "lucide-react";
 
 interface CustomerForm {
@@ -41,9 +37,8 @@ interface ConfirmedOrder {
   items: CartItem[];
   customer: CustomerForm;
   amount: number;
+  whatsappUrl: string;
 }
-
-type PaymentMethodType = "COD" | "UPI" | "CARD";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -75,9 +70,6 @@ function CheckoutContent() {
     pincode: "",
   });
 
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>("COD");
-  const [upiRefId, setUpiRefId] = useState("");
-  const [copiedUpi, setCopiedUpi] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrder | null>(
@@ -100,42 +92,8 @@ function CheckoutContent() {
     0
   );
 
-  const deliveryCharge = checkoutItems.length > 0 ? 40 : 0;
+  const deliveryCharge = itemsSubtotal > 0 ? 40 : 0;
   const totalAmount = itemsSubtotal + deliveryCharge;
-
-  const STORE_UPI_ID = "shreyacraftnest@okaxis";
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedUpi(true);
-    setTimeout(() => setCopiedUpi(false), 2000);
-  };
-
-  // If no single product and cart is empty
-  if (checkoutItems.length === 0 && !confirmedOrder) {
-    return (
-      <div className="text-center py-24 max-w-md mx-auto px-4 space-y-4">
-        <div className="w-16 h-16 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center mx-auto text-amber-800">
-          <ShoppingBag className="w-8 h-8" />
-        </div>
-        <h2 className="font-serif text-2xl font-bold text-stone-900">
-          Your Cart is Empty
-        </h2>
-        <p className="text-sm text-stone-600">
-          You don't have any handcrafted items queued for checkout yet. Browse our collection to add something special.
-        </p>
-        <div className="pt-2">
-          <Link
-            href="/#catalog"
-            className="inline-flex items-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-md transition-all"
-          >
-            <span>Browse Handcrafted Collection</span>
-            <ArrowLeft className="w-4 h-4 rotate-180" />
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -149,55 +107,6 @@ function CheckoutContent() {
     if (newProduct) {
       setSingleProduct(newProduct);
       router.replace(`/checkout?productId=${newProductId}`, { scroll: false });
-    }
-  };
-
-  const executeOrderRecording = async (paymentDetails: {
-    paymentMethod: string;
-    upiRefId?: string;
-    razorpay_order_id?: string;
-    razorpay_payment_id?: string;
-    razorpay_signature?: string;
-  }) => {
-    try {
-      const itemsPayload = checkoutItems.map((item) => ({
-        productId: item.product.id,
-        quantity: item.quantity,
-      }));
-
-      const recordRes = await fetch("/api/record-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...paymentDetails,
-          items: itemsPayload,
-          customer: form,
-        }),
-      });
-
-      const recordData = await recordRes.json();
-
-      if (!recordRes.ok || !recordData.success) {
-        throw new Error(recordData.error || "Failed to finalize order record");
-      }
-
-      setConfirmedOrder({
-        orderId: recordData.order.orderId,
-        paymentId: recordData.order.paymentId,
-        paymentMethod: recordData.order.paymentMethod,
-        items: checkoutItems,
-        customer: form,
-        amount: totalAmount,
-      });
-
-      // Clear the cart upon successful order
-      clearCart();
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err: any) {
-      setErrorMsg(err.message || "Order recording failed. Please try again.");
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -219,100 +128,96 @@ function CheckoutContent() {
       return;
     }
 
+    if (checkoutItems.length === 0) {
+      setErrorMsg("Your cart is empty. Please select an item to buy.");
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
-      // 1. CASH ON DELIVERY (Instant 1-Click Order Confirmation on site)
-      if (selectedMethod === "COD") {
-        await executeOrderRecording({
-          paymentMethod: "COD",
-        });
-        return;
-      }
-
-      // 2. DIRECT UPI & QR CODE
-      if (selectedMethod === "UPI") {
-        await executeOrderRecording({
-          paymentMethod: "UPI",
-          upiRefId: upiRefId.trim() || undefined,
-        });
-        return;
-      }
-
-      // 3. ONLINE CARDS / RAZORPAY
       const itemsPayload = checkoutItems.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
       }));
 
-      const orderRes = await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: itemsPayload }),
+      // Record order in studio database so tracking and admin works
+      let generatedOrderId = `SCN-${Date.now().toString().slice(-6)}`;
+      try {
+        const recordRes = await fetch("/api/record-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentMethod: "WhatsApp UPI QR",
+            items: itemsPayload,
+            customer: form,
+          }),
+        });
+        const recordData = await recordRes.json();
+        if (recordData?.order?.orderId) {
+          generatedOrderId = recordData.order.orderId;
+        }
+      } catch (err) {
+        console.warn("Could not save to local store, fallback ID used:", err);
+      }
+
+      // Build WhatsApp order message for maker Sudha Rani
+      const whatsappNumber =
+        process.env.NEXT_PUBLIC_STORE_WHATSAPP_NUMBER || "919491710704";
+
+      const itemsSummary = checkoutItems
+        .map(
+          (item) =>
+            `• ${item.product.name} × ${item.quantity} (₹${item.product.price * item.quantity})`
+        )
+        .join("\n");
+
+      const message =
+        `🌸 *New Order from Shreya Craft Nest!* 🌸\n\n` +
+        `🆔 *Order ID:* #${generatedOrderId}\n\n` +
+        `🛍️ *Items Ordered:*\n${itemsSummary}\n\n` +
+        `📦 *Delivery Fee:* ₹40 (Pan-India Express)\n` +
+        `💰 *Total Amount:* ₹${totalAmount}\n\n` +
+        `📍 *Delivery Address:*\n` +
+        `• *Name:* ${form.fullName}\n` +
+        `• *Mobile:* +91 ${form.phone}\n` +
+        `• *Address:* ${form.address}\n` +
+        `• *City:* ${form.city} - ${form.pincode}\n\n` +
+        `🙏 *Hello Sudha Rani ji,* please send your UPI QR code (Google Pay / PhonePe / Paytm) so I can make the payment and confirm my order!`;
+
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        message
+      )}`;
+
+      // Open WhatsApp automatically
+      if (typeof window !== "undefined") {
+        window.open(whatsappUrl, "_blank");
+      }
+
+      setConfirmedOrder({
+        orderId: generatedOrderId,
+        paymentId: `WA-QR-${generatedOrderId}`,
+        paymentMethod: "WhatsApp UPI QR",
+        items: checkoutItems,
+        customer: form,
+        amount: totalAmount,
+        whatsappUrl: whatsappUrl,
       });
 
-      const orderData = await orderRes.json();
-
-      if (!orderRes.ok || !orderData.success) {
-        throw new Error(orderData.error || "Failed to initialize payment gateway");
-      }
-
-      const isRazorpayLoaded = typeof window !== "undefined" && "Razorpay" in window;
-
-      if (isRazorpayLoaded && !orderData.isDemo) {
-        const orderSummaryText = checkoutItems
-          .map((i) => `${i.product.name} (x${i.quantity})`)
-          .join(", ");
-
-        const options = {
-          key: orderData.keyId,
-          amount: orderData.amount,
-          currency: "INR",
-          name: "Shreya Craft Nest",
-          description: `Order: ${orderSummaryText.slice(0, 80)}`,
-          image: checkoutItems[0]?.product.image,
-          order_id: orderData.orderId,
-          handler: function (response: any) {
-            executeOrderRecording({
-              paymentMethod: "Razorpay",
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
-          },
-          prefill: {
-            name: form.fullName,
-            contact: form.phone,
-          },
-          theme: {
-            color: "#92400e",
-          },
-          modal: {
-            ondismiss: function () {
-              setIsProcessing(false);
-            },
-          },
-        };
-
-        const razorpayInstance = new window.Razorpay(options);
-        razorpayInstance.open();
-      } else {
-        // Fallback card confirmation
-        await executeOrderRecording({
-          paymentMethod: "Card (Verified)",
-          razorpay_order_id: orderData.orderId || `SCN-${Date.now().toString().slice(-6)}`,
-          razorpay_payment_id: `PAY-${Date.now().toString().slice(-6)}`,
-        });
-      }
+      // Clear the cart upon successful order
+      clearCart();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
-      console.error("Checkout submission failed:", err);
-      setErrorMsg(err.message || "Order placement failed. Please try again.");
+      setErrorMsg(
+        err.message || "Failed to start WhatsApp order. Please try again."
+      );
+    } finally {
       setIsProcessing(false);
     }
   };
 
   // ========================================================
-  // ORDER CONFIRMED SCREEN (NO WHATSAPP FORCING!)
+  // ORDER CONFIRMED SCREEN (DIRECT WHATSAPP & UPI QR)
   // ========================================================
   if (confirmedOrder) {
     return (
@@ -325,7 +230,7 @@ function CheckoutContent() {
 
           <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 text-xs font-semibold px-3.5 py-1 rounded-full border border-emerald-200 mb-3">
             <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Order Confirmed Directly on Website!</span>
+            <span>Order Sent to Maker Sudha Rani on WhatsApp!</span>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
@@ -333,11 +238,27 @@ function CheckoutContent() {
           </h1>
 
           <p className="text-sm sm:text-base text-stone-600 mt-2 max-w-lg mx-auto">
-            Your order has been successfully recorded in our studio system. No further confirmation or message is required. Mom has started preparing your parcel!
+            Your order details have been forwarded to maker <strong>Sudha Rani (+91 9491710704)</strong> on WhatsApp. She will share her UPI QR code so you can make the payment and get your tracking number!
           </p>
 
+          {/* Prominent WhatsApp action button */}
+          <div className="my-6">
+            <a
+              href={confirmedOrder.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-sm sm:text-base px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer"
+            >
+              <MessageCircle className="w-5 h-5 fill-white" />
+              <span>Open WhatsApp Chat with Sudha Rani</span>
+            </a>
+            <p className="text-xs text-stone-500 mt-2">
+              If WhatsApp didn't open automatically, click the green button above.
+            </p>
+          </div>
+
           {/* Dispatch Notice Card */}
-          <div className="my-8 bg-[#FAF8F5] border border-amber-200/80 rounded-2xl p-5 sm:p-6 text-left space-y-4">
+          <div className="my-6 bg-[#FAF8F5] border border-amber-200/80 rounded-2xl p-5 sm:p-6 text-left space-y-4">
             <div className="flex items-center gap-3 text-amber-900 font-semibold text-sm border-b border-amber-200/60 pb-3">
               <Clock className="w-5 h-5 text-amber-700" />
               <span>Estimated Dispatch: Within 24-48 Hours</span>
@@ -412,7 +333,7 @@ function CheckoutContent() {
   }
 
   // ========================================================
-  // STANDARD CHECKOUT FORM WITH 3 PAYMENT METHODS
+  // CHECKOUT FORM WITH DIRECT WHATSAPP & UPI QR PAYMENT
   // ========================================================
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
@@ -430,10 +351,10 @@ function CheckoutContent() {
             <div className="flex items-center justify-between border-b border-stone-100 pb-4 mb-6">
               <div>
                 <h1 className="font-serif text-2xl font-bold text-stone-900">
-                  Shipping & Payment
+                  Shipping & WhatsApp Order
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  Choose your preferred payment method & enter delivery address.
+                  Enter delivery address & connect directly with maker Sudha Rani on WhatsApp.
                 </p>
               </div>
             </div>
@@ -477,7 +398,7 @@ function CheckoutContent() {
                     htmlFor={phoneId}
                     className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
                   >
-                    Mobile Phone Number <span className="text-red-500">*</span>
+                    Mobile Phone Number (WhatsApp) <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-3.5 text-stone-500 text-sm font-semibold select-none">
@@ -498,6 +419,9 @@ function CheckoutContent() {
                       className="w-full pl-14 pr-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 font-medium"
                     />
                   </div>
+                  <p className="text-[11px] text-stone-500 mt-1">
+                    Maker Sudha Rani will send tracking details and UPI QR code to this number.
+                  </p>
                 </div>
 
                 <div>
@@ -505,7 +429,7 @@ function CheckoutContent() {
                     htmlFor={addressId}
                     className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
                   >
-                    Detailed Delivery Address <span className="text-red-500">*</span>
+                    Complete Street Address (House No, Building, Area) <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     id={addressId}
@@ -513,10 +437,10 @@ function CheckoutContent() {
                     autoComplete="street-address"
                     required
                     rows={2}
-                    placeholder="House/Flat No., Building name, Landmark, Colony, Street"
+                    placeholder="e.g. Flat 301, Rosewood Heights, 2nd Cross Road"
                     value={form.address}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40 resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40"
                   />
                 </div>
 
@@ -534,7 +458,7 @@ function CheckoutContent() {
                       name="city"
                       autoComplete="address-level2"
                       required
-                      placeholder="e.g. Pune, Mumbai"
+                      placeholder="e.g. Visakhapatnam"
                       value={form.city}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700/50 focus:border-amber-700 text-sm bg-stone-50/40"
@@ -546,7 +470,7 @@ function CheckoutContent() {
                       htmlFor={pincodeId}
                       className="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1.5"
                     >
-                      PIN Code <span className="text-red-500">*</span>
+                      6-Digit Delivery PIN Code <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -566,170 +490,37 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* SECTION 2: PAYMENT METHOD SELECTION */}
+              {/* SECTION 2: PAYMENT METHOD (DIRECT WHATSAPP & UPI QR) */}
               <div className="space-y-4 pt-4 border-t border-stone-100">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-amber-900 bg-amber-50 px-3 py-1.5 rounded-lg inline-block">
-                  Step 2: Choose Payment Method
+                <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-900 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block">
+                  Step 2: Payment Method (Direct WhatsApp & UPI QR)
                 </h2>
 
-                <div className="grid grid-cols-1 gap-3">
-                  {/* OPTION 1: CASH ON DELIVERY */}
-                  <label
-                    onClick={() => setSelectedMethod("COD")}
-                    className={`p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${
-                      selectedMethod === "COD"
-                        ? "border-amber-800 bg-amber-50/40 shadow-xs"
-                        : "border-stone-200 hover:border-amber-300 bg-white"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      checked={selectedMethod === "COD"}
-                      onChange={() => setSelectedMethod("COD")}
-                      className="mt-1 text-amber-800 focus:ring-amber-800"
-                    />
-                    <div className="flex-grow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Banknote className="w-5 h-5 text-emerald-700" />
-                          <span className="font-bold text-stone-900 text-sm">
-                            Cash on Delivery (COD)
-                          </span>
-                        </div>
-                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                          Zero Advance Risk
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500 mt-1">
-                        Pay ₹{totalAmount} in cash or UPI when your parcel is delivered at your doorstep.
+                <div className="p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50/30 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-xs flex-shrink-0">
+                      <MessageCircle className="w-5 h-5 fill-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-stone-900 text-sm sm:text-base">
+                        Direct Order with Maker Sudha Rani
+                      </h3>
+                      <p className="text-xs text-emerald-800 font-semibold">
+                        WhatsApp: +91 9491710704 • Zero Payment Gateway Surcharge
                       </p>
                     </div>
-                  </label>
+                  </div>
 
-                  {/* OPTION 2: DIRECT UPI & QR CODE */}
-                  <label
-                    onClick={() => setSelectedMethod("UPI")}
-                    className={`p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${
-                      selectedMethod === "UPI"
-                        ? "border-amber-800 bg-amber-50/40 shadow-xs"
-                        : "border-stone-200 hover:border-amber-300 bg-white"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      checked={selectedMethod === "UPI"}
-                      onChange={() => setSelectedMethod("UPI")}
-                      className="mt-1 text-amber-800 focus:ring-amber-800"
-                    />
-                    <div className="flex-grow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <QrCode className="w-5 h-5 text-amber-800" />
-                          <span className="font-bold text-stone-900 text-sm">
-                            Direct UPI / Scan QR Code
-                          </span>
-                        </div>
-                        <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full">
-                          Google Pay • PhonePe • Paytm
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500 mt-1">
-                        Scan with any UPI app to pay ₹{totalAmount} directly with zero gateway charge.
-                      </p>
-
-                      {/* Expandable UPI QR Box when selected */}
-                      {selectedMethod === "UPI" && (
-                        <div className="mt-4 p-4 rounded-xl bg-white border border-amber-200 space-y-3">
-                          <div className="text-center space-y-2">
-                            <p className="text-xs font-semibold text-stone-700">
-                              Scan this QR Code with Google Pay, PhonePe, Paytm, or BHIM:
-                            </p>
-                            <div className="w-44 h-44 mx-auto border-2 border-stone-200 rounded-xl overflow-hidden p-2 bg-white shadow-xs">
-                              <img
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                                  `upi://pay?pa=${STORE_UPI_ID}&pn=ShreyaCraftNest&am=${totalAmount}&cu=INR`
-                                )}`}
-                                alt="UPI Payment QR Code"
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                            <div className="flex items-center justify-center gap-2 text-xs">
-                              <span className="text-stone-500">UPI ID:</span>
-                              <span className="font-mono font-bold text-stone-800 bg-stone-100 px-2 py-0.5 rounded">
-                                {STORE_UPI_ID}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(STORE_UPI_ID)}
-                                className="text-amber-800 hover:text-amber-900 text-xs font-semibold flex items-center gap-1 cursor-pointer"
-                              >
-                                {copiedUpi ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span className="text-emerald-700">Copied</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy className="w-3.5 h-3.5" />
-                                    <span>Copy</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-medium text-stone-600 mb-1">
-                              UPI Transaction ID / UTR Number (Optional):
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="e.g. 428192019281 (12 digits)"
-                              value={upiRefId}
-                              onChange={(e) => setUpiRefId(e.target.value)}
-                              className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 bg-stone-50/50"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </label>
-
-                  {/* OPTION 3: ONLINE CARDS / RAZORPAY */}
-                  <label
-                    onClick={() => setSelectedMethod("CARD")}
-                    className={`p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 cursor-pointer ${
-                      selectedMethod === "CARD"
-                        ? "border-amber-800 bg-amber-50/40 shadow-xs"
-                        : "border-stone-200 hover:border-amber-300 bg-white"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      checked={selectedMethod === "CARD"}
-                      onChange={() => setSelectedMethod("CARD")}
-                      className="mt-1 text-amber-800 focus:ring-amber-800"
-                    />
-                    <div className="flex-grow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-5 h-5 text-stone-700" />
-                          <span className="font-bold text-stone-900 text-sm">
-                            Debit / Credit Card & Netbanking
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-stone-500">
-                          Visa • MasterCard • RuPay
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500 mt-1">
-                        Pay online securely with any Indian bank debit/credit card or netbanking.
-                      </p>
-                    </div>
-                  </label>
+                  <div className="bg-white p-4 rounded-xl border border-emerald-200/80 text-xs text-stone-700 space-y-2 leading-relaxed">
+                    <p className="font-semibold text-stone-900">
+                      How your payment works in 3 easy steps:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-1 text-stone-600">
+                      <li>Enter your delivery address above and click the green button below.</li>
+                      <li>Your order & address details will open directly in WhatsApp with maker <strong>Sudha Rani</strong>.</li>
+                      <li>Sudha Rani will reply with her <strong>Google Pay / PhonePe / Paytm UPI QR code</strong> for instant payment!</li>
+                    </ol>
+                  </div>
                 </div>
               </div>
 
@@ -738,23 +529,19 @@ function CheckoutContent() {
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="w-full py-4 px-6 rounded-2xl bg-amber-800 hover:bg-amber-900 active:scale-[0.99] text-white font-bold text-base shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 cursor-pointer"
+                  className="w-full py-4 px-6 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] text-white font-bold text-base shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2.5 cursor-pointer"
                 >
-                  <Lock className="w-4 h-4 text-amber-200" />
+                  <MessageCircle className="w-5 h-5 fill-white" />
                   {isProcessing ? (
-                    <span>Confirming your order...</span>
-                  ) : selectedMethod === "COD" ? (
-                    <span>Place Order (Pay ₹{totalAmount} on Delivery)</span>
-                  ) : selectedMethod === "UPI" ? (
-                    <span>I have Paid ₹{totalAmount} via UPI — Confirm Order</span>
+                    <span>Opening WhatsApp...</span>
                   ) : (
-                    <span>Pay ₹{totalAmount} with Card / Netbanking</span>
+                    <span>Order via WhatsApp & Pay ₹{totalAmount} with QR</span>
                   )}
                 </button>
 
                 <p className="text-center text-[11px] text-stone-500 mt-2 flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Order is directly confirmed in our studio system with 100% data privacy.</span>
+                  <span>Order is directly confirmed with maker Sudha Rani on WhatsApp. 100% genuine cotton.</span>
                 </p>
               </div>
             </form>
@@ -859,7 +646,7 @@ function CheckoutContent() {
               </div>
               <div className="flex items-center gap-2.5 text-xs text-stone-600">
                 <ShieldCheck className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-                <span>100% Cotton & biodegradable packaging</span>
+                <span>Zero gateway fee: Pay directly to mom via UPI QR</span>
               </div>
             </div>
           </div>

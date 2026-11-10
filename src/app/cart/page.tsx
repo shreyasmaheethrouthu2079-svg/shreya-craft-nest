@@ -22,6 +22,7 @@ import {
   Lock,
   Tag,
   CheckCircle2,
+  MessageCircle,
 } from "lucide-react";
 
 export default function CartPage() {
@@ -421,18 +422,18 @@ export default function CartPage() {
                   {/* Primary Checkout CTA Button */}
                   <Link
                     href="/checkout"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 active:scale-[0.98] text-white font-bold text-sm sm:text-base py-3.5 sm:py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all uppercase tracking-wide cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.98] text-white font-bold text-sm sm:text-base py-3.5 sm:py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all tracking-wide cursor-pointer"
                   >
-                    <Lock className="w-4 h-4 text-amber-200" />
-                    <span>{t("cart.proceed")}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <MessageCircle className="w-5 h-5 fill-white" />
+                    <span>Order via WhatsApp & Pay with QR</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
 
                   {/* Trust guarantees */}
-                  <div className="mt-5 pt-4 border-t border-stone-100 space-y-2 text-[11px] text-stone-500">
+                  <div className="mt-5 pt-4 border-t border-stone-100 space-y-2 text-[11px] text-stone-600 font-medium">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-                      <span>100% Safe & Secure Payments (UPI, Cards & COD)</span>
+                      <span>Direct WhatsApp Order • Maker Sudha Rani sends UPI QR code</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-amber-700 flex-shrink-0" />

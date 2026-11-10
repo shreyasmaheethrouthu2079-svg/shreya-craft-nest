@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
   Truck,
+  MessageCircle,
 } from "lucide-react";
 
 export function CartDrawer() {
@@ -234,9 +235,10 @@ export function CartDrawer() {
                 <Link
                   href="/checkout"
                   onClick={closeCart}
-                  className="w-full inline-flex items-center justify-center gap-2.5 bg-amber-800 hover:bg-amber-900 active:scale-[0.99] text-white font-bold text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] active:scale-[0.99] text-white font-bold text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer"
                 >
-                  <span>Proceed to Checkout</span>
+                  <MessageCircle className="w-5 h-5 fill-white" />
+                  <span>Order via WhatsApp</span>
                   <span className="font-serif">(₹{subtotal + 40})</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Link>
@@ -251,9 +253,9 @@ export function CartDrawer() {
                 </Link>
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-600 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                <span>UPI, Google Pay, PhonePe, Paytm & Cards Supported</span>
+                <span>Direct WhatsApp Order • Maker Sudha Rani sends UPI QR code</span>
               </div>
             </div>
           )}
