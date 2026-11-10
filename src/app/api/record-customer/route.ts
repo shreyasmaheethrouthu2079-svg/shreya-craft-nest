@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             deliveryAddress: customer.email ? `Email: ${customer.email}` : `Mobile User: +91 ${customer.phone}`,
             productName:
               type === "signup"
-                ? "Created Shreya Craft Nest Account"
+                ? "Created Shreya's Craft Nest Account"
                 : "Customer Sign In",
             category: "Customer Profile",
             totalAmount: 0,

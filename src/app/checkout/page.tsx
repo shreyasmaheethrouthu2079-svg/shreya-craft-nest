@@ -192,7 +192,7 @@ function CheckoutContent() {
         .join("\n");
 
       const message =
-        `🌸 *New Order from Shreya Craft Nest!* 🌸\n\n` +
+        `🌸 *New Order from Shreya's Craft Nest!* 🌸\n\n` +
         `🆔 *Order ID:* #${generatedOrderId}\n\n` +
         `🛍️ *Items Ordered:*\n${itemsSummary}\n\n` +
         `📦 *Delivery Fee:* ₹40 (Pan-India Express)\n` +
@@ -693,7 +693,7 @@ export default function CheckoutPage() {
               <div className="text-center space-y-3">
                 <div className="w-10 h-10 border-4 border-amber-700 border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-sm font-semibold text-stone-600">
-                  Loading Shreya Craft Nest Checkout...
+                  Loading Shreya&apos;s Craft Nest Checkout...
                 </p>
               </div>
             </div>

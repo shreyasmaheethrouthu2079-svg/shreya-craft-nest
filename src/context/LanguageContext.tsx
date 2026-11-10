@@ -41,7 +41,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     "hero.headlineStart": "Handcrafted Bags, Pouches & Hair Accessories",
     "hero.headlineItalic": "Stitched with Love",
     "hero.welcome": "Welcome to",
-    "hero.brand": "Shreya Crafts Nest",
+    "hero.brand": "Shreya's Craft Nest",
     "hero.desc": "Every stitch is thoughtfully placed at our home studio using durable cotton canvas, natural threads, and pure mulberry satin. No factory shortcuts—just genuine love, sturdy seams, and timeless warmth.",
     "hero.bullet1": "Durable French Seams",
     "hero.bullet2": "Zero Plastic Packaging",

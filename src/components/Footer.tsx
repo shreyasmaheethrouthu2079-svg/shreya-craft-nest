@@ -13,14 +13,14 @@ export function Footer() {
               <div className="relative w-11 h-11 rounded-full overflow-hidden border border-amber-500/40 bg-[#FAF7F2] flex-shrink-0">
                 <Image
                   src="/logo-emblem.png"
-                  alt="Shreya Craft Nest Logo"
+                  alt="Shreya's Craft Nest Logo"
                   fill
                   sizes="44px"
                   className="object-cover"
                 />
               </div>
               <span className="font-serif text-2xl font-bold text-white tracking-wide">
-                Shreya Craft Nest
+                Shreya&apos;s Craft Nest
               </span>
             </div>
             <p className="text-sm text-stone-400 leading-relaxed max-w-md">
@@ -98,7 +98,7 @@ export function Footer() {
         {/* Bottom divider with UPI logos & copyright */}
         <div className="mt-14 pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
-            <p>© {new Date().getFullYear()} Shreya Crafts Nest. Hand-stitched with love & devotion.</p>
+            <p>© {new Date().getFullYear()} Shreya&apos;s Craft Nest. Hand-stitched with love & devotion.</p>
             <span className="hidden sm:inline text-stone-700">•</span>
             <Link href="/admin" className="text-stone-400 hover:text-amber-400 transition-colors underline decoration-dotted">
               Maker Admin Portal

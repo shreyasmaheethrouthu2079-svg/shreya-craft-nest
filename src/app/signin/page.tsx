@@ -299,12 +299,12 @@ function SignInContent() {
         <Link
           href="/"
           className="flex items-center gap-2 p-1 hover:opacity-95 transition-opacity group"
-          aria-label="Shreya Craft Nest Home"
+          aria-label="Shreya's Craft Nest Home"
         >
           <div className="relative w-10 h-10 rounded-full overflow-hidden border border-amber-300 bg-white shadow-xs flex-shrink-0">
             <Image
               src="/logo-emblem.png"
-              alt="Shreya Craft Nest Logo"
+              alt="Shreya's Craft Nest Logo"
               fill
               sizes="40px"
               className="object-cover"
@@ -313,7 +313,7 @@ function SignInContent() {
           </div>
           <div className="flex flex-col leading-none">
             <div className="flex items-baseline font-serif font-bold tracking-tight text-stone-900 text-2xl">
-              <span>Shreya Craft Nest</span>
+              <span>Shreya&apos;s Craft Nest</span>
               <span className="text-amber-800 text-xs font-sans font-bold ml-0.5">.in</span>
             </div>
             {/* Amazon-style smile / arc accent */}
@@ -487,7 +487,7 @@ function SignInContent() {
 
                   {/* Conditions & Privacy Notice */}
                   <p className="text-[12px] text-[#0f1111] leading-relaxed pt-1">
-                    By continuing, you agree to Shreya Craft Nest's{" "}
+                    By continuing, you agree to Shreya&apos;s Craft Nest&apos;s{" "}
                     <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
                       Conditions of Use
                     </Link>{" "}
@@ -516,7 +516,7 @@ function SignInContent() {
                     {showHelp && (
                       <div className="pl-4 pt-2 space-y-1.5 text-xs animate-in fade-in duration-150">
                         <a
-                          href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20assistance%20signing%20in%20to%20Shreya%20Crafts%20Nest."
+                          href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20assistance%20signing%20in%20to%20Shreya%27s%20Craft%20Nest."
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 hover:underline font-medium"
@@ -634,7 +634,7 @@ function SignInContent() {
 
                   {/* Legal Notice */}
                   <p className="text-[12px] text-[#0f1111] leading-relaxed pt-1">
-                    By creating an account, you agree to Shreya Craft Nest's{" "}
+                    By creating an account, you agree to Shreya&apos;s Craft Nest&apos;s{" "}
                     <Link href="/#catalog" className="text-[#007185] hover:text-[#c7511f] hover:underline">
                       Conditions of Use
                     </Link>{" "}
@@ -654,7 +654,7 @@ function SignInContent() {
                     {isSubmitting ? (
                       <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <span>Create your Shreya Craft Nest account</span>
+                      <span>Create your Shreya&apos;s Craft Nest account</span>
                     )}
                   </button>
 
@@ -686,7 +686,7 @@ function SignInContent() {
                   </div>
 
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    Enter the email address or mobile phone number associated with your Shreya Craft Nest account.
+                    Enter the email address or mobile phone number associated with your Shreya&apos;s Craft Nest account.
                   </p>
 
                   <div>
@@ -778,7 +778,7 @@ function SignInContent() {
                 <div className="relative flex items-center justify-center">
                   <div className="w-full border-t border-[#e7e7e7]"></div>
                   <span className="bg-[#FAF8F5]/60 sm:bg-[#FAF8F5]/80 px-2 text-[12px] text-stone-500 whitespace-nowrap">
-                    New to Shreya Craft Nest?
+                    New to Shreya&apos;s Craft Nest?
                   </span>
                   <div className="w-full border-t border-[#e7e7e7]"></div>
                 </div>
@@ -792,7 +792,7 @@ function SignInContent() {
                   }}
                   className="w-full bg-[#f0f2f2] hover:bg-[#e3e6e6] active:bg-[#d8dbdb] text-[#0f1111] font-normal text-xs sm:text-sm py-2 rounded-lg border border-[#d5d9d9] shadow-2xs hover:shadow-xs transition-colors cursor-pointer text-center"
                 >
-                  Create your Shreya Craft Nest account
+                  Create your Shreya&apos;s Craft Nest account
                 </button>
 
                 {/* Flipkart Fast Guest Option */}
@@ -834,7 +834,7 @@ function SignInContent() {
             Privacy Notice
           </Link>
           <a
-            href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%20Crafts%20Nest."
+            href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20have%20an%20inquiry%20regarding%20Shreya%27s%20Craft%20Nest."
             target="_blank"
             rel="noopener noreferrer"
             className="text-[#007185] hover:text-[#c7511f] hover:underline"
@@ -843,7 +843,7 @@ function SignInContent() {
           </a>
         </div>
         <p className="text-[11px] text-stone-400">
-          © {new Date().getFullYear()}, Shreya Craft Nest.in or its affiliates. Handcrafted with love in India.
+          © {new Date().getFullYear()}, Shreya&apos;s Craft Nest.in or its affiliates. Handcrafted with love in India.
         </p>
       </footer>
     </div>

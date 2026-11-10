@@ -36,7 +36,7 @@ export default function HomePage() {
           <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-300 bg-white shadow-md">
             <Image
               src="/logo-emblem.png"
-              alt="Shreya Craft Nest Logo"
+              alt="Shreya's Craft Nest Logo"
               fill
               sizes="64px"
               className="object-cover"
@@ -45,7 +45,7 @@ export default function HomePage() {
           </div>
           <div>
             <h2 className="font-serif text-xl font-bold text-stone-900">
-              Shreya Craft Nest
+              Shreya&apos;s Craft Nest
             </h2>
             <p className="text-xs text-stone-500 mt-1">
               Opening Sign In page...
@@ -126,7 +126,7 @@ export default function HomePage() {
                   <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-[#FAF7F2] aspect-square">
                     <Image
                       src="/products/hero-collection.jpg"
-                      alt="Artisanal Fabrics Collective - Handcrafted bags & pouches by Shreya Crafts Nest"
+                      alt="Artisanal Fabrics Collective - Handcrafted bags & pouches by Shreya's Craft Nest"
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
                       priority

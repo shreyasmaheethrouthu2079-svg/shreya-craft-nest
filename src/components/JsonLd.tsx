@@ -11,11 +11,11 @@ export function JsonLd() {
     "@context": "https://schema.org",
     "@type": "Store",
     "@id": `${baseUrl}/#store`,
-    name: "Shreya Craft Nest",
+    name: "Shreya's Craft Nest",
     alternateName: [
+      "Shreya Craft Nest",
       "Shreya Crafts Nest",
-      "Shreya Craft Nest Store",
-      "Shreya's Craft Nest",
+      "Shreya's Craft Nest Store",
     ],
     url: baseUrl,
     logo: `${baseUrl}/logo-emblem.png`,
@@ -70,7 +70,7 @@ export function JsonLd() {
               : "https://schema.org/OutOfStock",
             seller: {
               "@type": "Organization",
-              name: "Shreya Craft Nest",
+              name: "Shreya's Craft Nest",
             },
           },
           aggregateRating: {

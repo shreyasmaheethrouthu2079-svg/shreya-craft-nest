@@ -117,12 +117,12 @@ export function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-2.5 p-1 rounded-lg hover:opacity-90 transition-all flex-shrink-0 group"
-          aria-label="Shreya Craft Nest Home"
+          aria-label="Shreya's Craft Nest Home"
         >
           <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border border-amber-300 bg-white shadow-xs flex-shrink-0">
             <Image
               src="/logo-emblem.png"
-              alt="Shreya Craft Nest Logo"
+              alt="Shreya's Craft Nest Logo"
               fill
               sizes="40px"
               className="object-cover"
@@ -131,7 +131,7 @@ export function Navbar() {
           </div>
           <div className="flex flex-col leading-none">
             <div className="flex items-baseline font-serif font-bold tracking-tight text-stone-900 text-lg sm:text-xl">
-              <span>Shreya Craft Nest</span>
+              <span>Shreya&apos;s Craft Nest</span>
               <span className="text-amber-800 text-xs font-sans font-bold ml-0.5">.in</span>
             </div>
             {/* Elegant warm golden arc accent */}
@@ -456,7 +456,7 @@ export function Navbar() {
                   {isLoggedIn && user ? `Hello, ${user.name}` : "Hello, Sign In"}
                 </p>
                 <p className="text-[11px] text-amber-300 truncate">
-                  {isLoggedIn && user ? (user.isGuest ? "Guest Customer" : (user.email || user.phone)) : "Welcome to Shreya Craft Nest"}
+                  {isLoggedIn && user ? (user.isGuest ? "Guest Customer" : (user.email || user.phone)) : "Welcome to Shreya's Craft Nest"}
                 </p>
               </div>
             </div>

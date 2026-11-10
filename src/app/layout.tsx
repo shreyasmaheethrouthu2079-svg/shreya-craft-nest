@@ -30,12 +30,13 @@ const baseUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Shreya Craft Nest | Handcrafted Bags, Pouches & Hair Accessories",
-    template: "%s | Shreya Craft Nest",
+    default: "Shreya's Craft Nest | Handcrafted Bags, Pouches & Hair Accessories",
+    template: "%s | Shreya's Craft Nest",
   },
   description:
     "Handcrafted cotton bags, pouches & accessories lovingly stitched by mom Sudha Rani. Small-batch artisan goods, premium cotton, direct UPI payment, and Pan-India delivery.",
   keywords: [
+    "Shreya's Craft Nest",
     "Shreya Craft Nest",
     "Shreya Crafts Nest",
     "Handmade Bags India",
@@ -49,9 +50,9 @@ export const metadata: Metadata = {
     "Sudha Rani Bags",
     "Bags under 500",
   ],
-  authors: [{ name: "Shreya Craft Nest", url: baseUrl }],
+  authors: [{ name: "Shreya's Craft Nest", url: baseUrl }],
   creator: "Sudha Rani & Shreya",
-  publisher: "Shreya Craft Nest",
+  publisher: "Shreya's Craft Nest",
   alternates: {
     canonical: "/",
   },
@@ -59,8 +60,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: baseUrl,
-    siteName: "Shreya Craft Nest",
-    title: "Shreya Craft Nest | Handcrafted Bags & Pouches by Mom",
+    siteName: "Shreya's Craft Nest",
+    title: "Shreya's Craft Nest | Handcrafted Bags & Pouches by Mom",
     description:
       "Handcrafted cotton bags, pouches & accessories stitched with love by mom Sudha Rani. Handbags ₹400, Mini Bags ₹140, Pouches ₹100. Pan-India delivery.",
     images: [
@@ -68,19 +69,19 @@ export const metadata: Metadata = {
         url: "/products/botanical-stripe-bag.jpg",
         width: 1200,
         height: 630,
-        alt: "Shreya Craft Nest Handcrafted Bags",
+        alt: "Shreya's Craft Nest Handcrafted Bags",
       },
       {
         url: "/logo-banner.jpg",
         width: 1200,
         height: 630,
-        alt: "Shreya Craft Nest Artisan Goods",
+        alt: "Shreya's Craft Nest Artisan Goods",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shreya Craft Nest | Handcrafted Bags & Pouches by Mom",
+    title: "Shreya's Craft Nest | Handcrafted Bags & Pouches by Mom",
     description:
       "Handcrafted cotton bags, pouches & accessories stitched with love by mom Sudha Rani. Handbags ₹400, Mini Bags ₹140, Pouches ₹100.",
     images: ["/products/botanical-stripe-bag.jpg"],

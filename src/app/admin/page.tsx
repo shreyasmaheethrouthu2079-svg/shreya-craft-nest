@@ -490,7 +490,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="relative w-9 h-9 rounded-full overflow-hidden border border-amber-300 bg-white shadow-xs">
-              <Image src="/logo-emblem.png" alt="Shreya Craft Nest" fill className="object-cover" />
+              <Image src="/logo-emblem.png" alt="Shreya's Craft Nest" fill className="object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -575,7 +575,7 @@ export default function AdminPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1.5 transition-colors shadow-2xs"
-            title="Open your Google Sheet titled 'Shreya Craft Nest' in a new tab"
+            title="Open your Google Sheet titled 'Shreya\'s Craft Nest' in a new tab"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
             <span>Open Google Sheet Live Sync ↗</span>
@@ -619,7 +619,7 @@ export default function AdminPage() {
                   <UserCheck className="w-6 h-6 text-stone-700" />
                   <span>{customersList.filter((c) => c.type === "signup").length}</span>
                 </div>
-                <p className="text-[10px] text-stone-500">Created Shreya Craft Nest accounts</p>
+                <p className="text-[10px] text-stone-500">Created Shreya&apos;s Craft Nest accounts</p>
               </div>
             </section>
 
@@ -689,7 +689,7 @@ export default function AdminPage() {
 
                   const waChatUrl = cleanPhone
                     ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(
-                        `Namaste ${cust.name}! This is Sudha Rani from Shreya Craft Nest. How can I help you today?`
+                        `Namaste ${cust.name}! This is Sudha Rani from Shreya's Craft Nest. How can I help you today?`
                       )}`
                     : null;
 
@@ -971,7 +971,7 @@ export default function AdminPage() {
 
               const cleanPhone = order.customer.phone.replace(/\D/g, "").slice(-10);
               const waText = encodeURIComponent(
-                `Namaste ${order.customer.fullName}! This is Shreya Crafts Nest regarding your handcrafted order #${order.orderId}. Status: ${STATUS_LABELS[order.status].label}.`
+                `Namaste ${order.customer.fullName}! This is Shreya's Craft Nest regarding your handcrafted order #${order.orderId}. Status: ${STATUS_LABELS[order.status].label}.`
               );
 
               return (
@@ -1234,7 +1234,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between border-b-2 border-stone-800 pb-4">
                 <div>
                   <h2 className="font-serif text-2xl font-black tracking-tight">
-                    SHREYA CRAFTS NEST
+                    SHREYA&apos;S CRAFT NEST
                   </h2>
                   <p className="text-xs text-stone-600 font-medium">
                     Handmade Cotton Bags & Pouches • Stitched With Love
@@ -1276,7 +1276,7 @@ export default function AdminPage() {
                   <span className="font-bold uppercase tracking-wider text-[10px] text-stone-500 block">
                     SHIPPED FROM:
                   </span>
-                  <p className="font-bold text-sm text-stone-900">Shreya Crafts Nest Studio</p>
+                  <p className="font-bold text-sm text-stone-900">Shreya&apos;s Craft Nest Studio</p>
                   <p className="text-stone-700 leading-relaxed">
                     Yelahanka Campus, Bengaluru, Karnataka - 560064
                   </p>
