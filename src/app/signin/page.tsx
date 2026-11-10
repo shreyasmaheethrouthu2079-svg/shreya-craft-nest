@@ -27,6 +27,8 @@ function SignInContent() {
   const redirectUrl = searchParams.get("redirect") || "/";
 
   const {
+    loginWithPhone,
+    loginWithEmail,
     loginWithPassword,
     loginWithOtp,
     register,
@@ -70,7 +72,7 @@ function SignInContent() {
     }, 700);
   };
 
-  // 1. Handle Primary Sign In with Password Verification
+  // 1. Handle Primary Sign In with Email or Phone Number (Fast & Direct)
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -84,44 +86,41 @@ function SignInContent() {
     setIsSubmitting(true);
 
     try {
-      if (otpMode) {
-        // Flipkart style OTP verification
-        if (otpCode !== "123456" && otpCode.length !== 6) {
-          setError("Invalid verification code. Please enter demo code: 123456");
-          setIsSubmitting(false);
-          return;
-        }
-        const success = await loginWithOtp(cleanId, otpCode, name || undefined);
-        if (!success) {
-          setError("OTP verification failed. Please try again.");
-          setIsSubmitting(false);
-          return;
-        }
-      } else {
-        // Amazon style Password Verification
-        if (!password) {
-          setError("Enter your password");
-          setIsSubmitting(false);
-          return;
-        }
-        if (password.length < 6) {
-          setError("Password must be at least 6 characters");
-          setIsSubmitting(false);
-          return;
-        }
-
-        const res = await loginWithPassword(cleanId, password, name || undefined);
-        if (!res.success) {
-          setError(res.error || "Incorrect password. Please verify your password and try again.");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
       const isEmail = cleanId.includes("@");
       const cleanPhone = cleanId.replace(/\D/g, "");
+
+      if (!isEmail && cleanPhone.length < 10) {
+        setError("Please enter a valid 10-digit mobile number or email address");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check if user has an existing account in storage
+      let registeredName: string | undefined = undefined;
+      try {
+        const raw = localStorage.getItem("scn_registered_accounts");
+        if (raw) {
+          const accounts = JSON.parse(raw);
+          const matched = accounts.find(
+            (a: any) =>
+              a.identifier?.toLowerCase() === cleanId.toLowerCase() ||
+              (cleanPhone && a.phone?.replace(/\D/g, "").endsWith(cleanPhone.slice(-10))) ||
+              (a.email && a.email.toLowerCase() === cleanId.toLowerCase())
+          );
+          if (matched?.name) registeredName = matched.name;
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      if (isEmail) {
+        await loginWithEmail(cleanId, undefined, registeredName);
+      } else {
+        await loginWithPhone(cleanPhone, registeredName);
+      }
+
       const displayName =
-        name.trim() ||
+        registeredName ||
         (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4) || ""}`);
       finishLogin(displayName);
     } catch (err) {
@@ -355,130 +354,18 @@ function SignInContent() {
                     </div>
                   </div>
 
-                  {/* Password Verification Field (Amazon Core) */}
-                  {!otpMode && (
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label
-                          htmlFor="signin-password"
-                          className="text-[13px] font-bold text-[#0f1111]"
-                        >
-                          Password
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveTab("forgot");
-                            setError(null);
-                          }}
-                          className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer"
-                        >
-                          Forgot Password?
-                        </button>
-                      </div>
-
-                      <div className="relative flex items-center">
-                        <input
-                          id="signin-password"
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => {
-                            setPassword(e.target.value);
-                            if (error) setError(null);
-                          }}
-                          placeholder="At least 6 characters"
-                          required
-                          className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all pr-8"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-2.5 text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Customer Name Input (Amazon Personalization) */}
-                  <div>
-                    <label
-                      htmlFor="signin-name"
-                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
-                    >
-                      Your Name <span className="font-normal text-stone-500">(Optional)</span>
-                    </label>
-                    <div className="relative flex items-center">
-                      <input
-                        id="signin-name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. Shreya"
-                        className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
-                      />
-                      <div className="absolute right-2.5 pointer-events-none text-stone-400">
-                        <UserIcon className="w-4 h-4 text-stone-400" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Flipkart Fast OTP Verification Mode */}
-                  {otpMode && (
-                    <div className="p-3 bg-amber-50/60 rounded-lg border border-amber-200/90 space-y-2 animate-in fade-in duration-150">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-amber-950">Enter 6-digit OTP:</span>
-                        <span className="text-[11px] text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-mono font-bold">
-                          Demo OTP: 123456
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        placeholder="123456"
-                        maxLength={6}
-                        className="w-full px-3 py-1.5 bg-white text-[#0f1111] text-center font-mono font-bold tracking-widest text-base rounded-[4px] border border-amber-300 focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setOtpCode("123456")}
-                        className="text-[11px] text-[#007185] hover:text-[#c7511f] hover:underline cursor-pointer block"
-                      >
-                        Auto-fill demo code (123456)
-                      </button>
-                    </div>
-                  )}
-
                   {/* Primary Signature Button (Amazon Yellow Button) */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] border border-[#a88734] rounded-lg py-2 text-sm text-[#0f1111] font-medium shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] border border-[#a88734] rounded-lg py-2.5 text-sm text-[#0f1111] font-medium shadow-xs hover:shadow transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     {isSubmitting ? (
                       <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <span>{otpMode ? "Verify & Sign in" : "Sign in"}</span>
+                      <span>Continue</span>
                     )}
                   </button>
-
-                  {/* Flipkart Style: Sign in with OTP Toggle */}
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setOtpMode(!otpMode)}
-                      className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-medium cursor-pointer"
-                    >
-                      {otpMode ? "Sign in with password instead" : "Sign in with OTP instead"}
-                    </button>
-                  </div>
 
                   {/* Conditions & Privacy Notice */}
                   <p className="text-[12px] text-[#0f1111] leading-relaxed pt-1">
@@ -510,16 +397,6 @@ function SignInContent() {
 
                     {showHelp && (
                       <div className="pl-4 pt-2 space-y-1.5 text-xs animate-in fade-in duration-150">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveTab("forgot");
-                            setError(null);
-                          }}
-                          className="block text-[#007185] hover:text-[#c7511f] hover:underline text-left cursor-pointer"
-                        >
-                          Forgot your password?
-                        </button>
                         <a
                           href="https://wa.me/919491710704?text=Hi%20Sudha%20Rani%20ji%2C%20I%20need%20assistance%20signing%20in%20to%20Shreya%20Crafts%20Nest."
                           target="_blank"
@@ -649,7 +526,7 @@ function SignInContent() {
                     {isSubmitting ? (
                       <div className="w-4 h-4 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <span>Verify mobile number & Create Account</span>
+                      <span>Create your Shreya Craft Nest account</span>
                     )}
                   </button>
 
