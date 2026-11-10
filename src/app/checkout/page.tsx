@@ -202,7 +202,7 @@ function CheckoutContent() {
         `• *Mobile:* +91 ${form.phone}\n` +
         `• *Address:* ${form.address}\n` +
         `• *City:* ${form.city} - ${form.pincode}\n\n` +
-        `🙏 *Hello Sudha Rani ji,* please send your UPI QR code (Google Pay / PhonePe / Paytm) so I can make the payment and confirm my order!`;
+        `🙏 *Hello Sudha Rani ji,* please share your UPI QR code (Google Pay / PhonePe / Paytm) for payment and confirm my order!`;
 
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
         message
