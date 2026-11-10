@@ -20,18 +20,6 @@ export function ProductCard({ product }: ProductCardProps) {
     ((product.originalPrice - product.price) / product.originalPrice) * 100
   );
 
-  const whatsappNumber =
-    process.env.NEXT_PUBLIC_STORE_WHATSAPP_NUMBER || "919491710704";
-  const whatsappText = encodeURIComponent(
-    `Hello Sudha Rani ji! 🌸\n` +
-      `I would like to order this handcrafted item from Shreya Craft Nest:\n\n` +
-      `👜 *Product:* ${product.name}\n` +
-      `💰 *Price:* ₹${product.price} (Original: ₹${product.originalPrice})\n` +
-      `📂 *Category:* ${product.category}\n\n` +
-      `Please send your UPI QR code or GPay/PhonePe number so I can complete the payment and share my delivery address! Thank you.`
-  );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappText}`;
-
   return (
     <article className="group bg-white rounded-2xl border border-[#EDE6DD] overflow-hidden shadow-sm hover:shadow-xl hover:border-amber-300 transition-all duration-300 flex flex-col justify-between">
       <div>
@@ -171,16 +159,14 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
             )}
 
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/checkout?productId=${product.id}`}
               className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] active:scale-95 text-white font-bold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex-1 cursor-pointer"
-              title={`Order ${product.name} directly via WhatsApp`}
+              title={`Order ${product.name} with delivery address via WhatsApp`}
             >
               <MessageCircle className="w-4 h-4 fill-white" />
               <span>Order on WhatsApp</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

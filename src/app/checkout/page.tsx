@@ -70,6 +70,25 @@ function CheckoutContent() {
     pincode: "",
   });
 
+  // Pre-fill previously entered address for faster 1-tap checkout
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("scn_customer_address");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setForm((prev) => ({
+          fullName: parsed.fullName || prev.fullName,
+          phone: parsed.phone || prev.phone,
+          address: parsed.address || prev.address,
+          city: parsed.city || prev.city,
+          pincode: parsed.pincode || prev.pincode,
+        }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrder | null>(
@@ -203,6 +222,13 @@ function CheckoutContent() {
         amount: totalAmount,
         whatsappUrl: whatsappUrl,
       });
+
+      // Save address locally so subsequent orders are prefilled
+      try {
+        localStorage.setItem("scn_customer_address", JSON.stringify(form));
+      } catch (e) {
+        // ignore
+      }
 
       // Clear the cart upon successful order
       clearCart();
