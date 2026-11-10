@@ -46,7 +46,20 @@ function SignInContent() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Prefill name and phone if already known
+  React.useEffect(() => {
+    try {
+      const savedAddress = localStorage.getItem("scn_customer_address");
+      if (savedAddress) {
+        const parsed = JSON.parse(savedAddress);
+        if (parsed.fullName && !name) setName(parsed.fullName);
+        if (parsed.phone && !phone) setPhone(parsed.phone.replace(/\D/g, "").slice(-10));
+      }
+    } catch {}
+  }, []);
 
   // OTP Mode (Flipkart alternative)
   const [otpMode, setOtpMode] = useState(false);
@@ -72,69 +85,88 @@ function SignInContent() {
     }, 700);
   };
 
-  // 1. Handle Primary Sign In with Email or Phone Number (Fast & Direct)
+  // 1. Handle Primary Sign In with Compulsory Name and Mobile Phone Number
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const cleanId = identifier.trim();
+    const cleanName = name.trim();
+    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
 
-    if (!cleanId) {
-      setError("Enter your email or mobile phone number");
+    if (!cleanName) {
+      setError("Please enter your name (Required)");
+      return;
+    }
+
+    if (cleanName.length < 2) {
+      setError("Please enter a valid full name (at least 2 characters)");
+      return;
+    }
+
+    if (!cleanPhone) {
+      setError("Please enter your 10-digit mobile phone number (Required)");
+      return;
+    }
+
+    if (cleanPhone.length !== 10) {
+      setError("Please enter a valid 10-digit Indian mobile number");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const isEmail = cleanId.includes("@");
-      const cleanPhone = cleanId.replace(/\D/g, "");
+      await loginWithPhone(cleanPhone, cleanName);
 
-      if (!isEmail && cleanPhone.length < 10) {
-        setError("Please enter a valid 10-digit mobile number or email address");
-        setIsSubmitting(false);
-        return;
-      }
+      // Pre-fill customer address for faster checkout
+      try {
+        const saved = localStorage.getItem("scn_customer_address");
+        const existing = saved ? JSON.parse(saved) : {};
+        localStorage.setItem(
+          "scn_customer_address",
+          JSON.stringify({
+            ...existing,
+            fullName: cleanName,
+            phone: cleanPhone,
+          })
+        );
+      } catch (e) {}
 
-      // Check if user has an existing account in storage
-      let registeredName: string | undefined = undefined;
+      // Save to registered accounts in localStorage
       try {
         const raw = localStorage.getItem("scn_registered_accounts");
-        if (raw) {
-          const accounts = JSON.parse(raw);
-          const matched = accounts.find(
-            (a: any) =>
-              a.identifier?.toLowerCase() === cleanId.toLowerCase() ||
-              (cleanPhone && a.phone?.replace(/\D/g, "").endsWith(cleanPhone.slice(-10))) ||
-              (a.email && a.email.toLowerCase() === cleanId.toLowerCase())
-          );
-          if (matched?.name) registeredName = matched.name;
+        let accounts = raw ? JSON.parse(raw) : [];
+        const existingIdx = accounts.findIndex(
+          (a: any) =>
+            a.phone?.replace(/\D/g, "").endsWith(cleanPhone) ||
+            a.identifier === cleanPhone
+        );
+        if (existingIdx >= 0) {
+          accounts[existingIdx].name = cleanName;
+          accounts[existingIdx].lastLogin = new Date().toISOString();
+        } else {
+          accounts.push({
+            id: `ACC-${Date.now().toString().slice(-6)}`,
+            name: cleanName,
+            identifier: cleanPhone,
+            phone: cleanPhone,
+            createdAt: new Date().toISOString(),
+          });
         }
-      } catch (e) {
-        // ignore
-      }
-
-      if (isEmail) {
-        await loginWithEmail(cleanId, undefined, registeredName);
-      } else {
-        await loginWithPhone(cleanPhone, registeredName);
-      }
-
-      const displayName =
-        registeredName ||
-        (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4) || ""}`);
+        localStorage.setItem("scn_registered_accounts", JSON.stringify(accounts));
+      } catch (e) {}
 
       // Sync customer sign in to Google Sheets in background
       fetch("/api/record-customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: displayName,
-          identifier: cleanId,
+          name: cleanName,
+          identifier: cleanPhone,
           type: "signin",
         }),
       }).catch(() => {});
 
-      finishLogin(displayName);
+      finishLogin(cleanName);
     } catch (err) {
       console.error(err);
       setError("Unable to sign in. Please check your credentials and try again.");
@@ -146,13 +178,24 @@ function SignInContent() {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    const cleanName = name.trim();
+    const cleanId = identifier.trim();
+    const cleanPhone = cleanId.replace(/\D/g, "").slice(-10);
 
-    if (!name.trim()) {
-      setError("Enter your name");
+    if (!cleanName) {
+      setError("Enter your name (Required)");
       return;
     }
-    if (!identifier.trim()) {
-      setError("Enter your mobile number or email");
+    if (cleanName.length < 2) {
+      setError("Please enter a valid full name (at least 2 characters)");
+      return;
+    }
+    if (!cleanId) {
+      setError("Enter your 10-digit mobile number (Required)");
+      return;
+    }
+    if (!cleanId.includes("@") && cleanPhone.length !== 10) {
+      setError("Please enter a valid 10-digit mobile number");
       return;
     }
     if (!password) {
@@ -166,25 +209,39 @@ function SignInContent() {
 
     setIsSubmitting(true);
     try {
-      const res = await register(name.trim(), identifier.trim(), password);
+      const res = await register(cleanName, cleanId, password);
       if (!res.success) {
         setError(res.error || "Registration failed. Please check your information.");
         setIsSubmitting(false);
         return;
       }
 
+      // Pre-fill customer address for faster checkout
+      try {
+        const saved = localStorage.getItem("scn_customer_address");
+        const existing = saved ? JSON.parse(saved) : {};
+        localStorage.setItem(
+          "scn_customer_address",
+          JSON.stringify({
+            ...existing,
+            fullName: cleanName,
+            phone: cleanPhone.length === 10 ? cleanPhone : existing.phone || "",
+          })
+        );
+      } catch (e) {}
+
       // Sync customer registration to Google Sheets in background
       fetch("/api/record-customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
-          identifier: identifier.trim(),
+          name: cleanName,
+          identifier: cleanId,
           type: "signup",
         }),
       }).catch(() => {});
 
-      finishLogin(name.trim());
+      finishLogin(cleanName);
     } catch (err) {
       console.error(err);
       setError("Registration failed. Please try again.");
@@ -339,43 +396,80 @@ function SignInContent() {
                 </div>
               )}
 
-              {/* VIEW 1: SIGN IN WITH PASSWORD VERIFICATION (Amazon Style) */}
+              {/* VIEW 1: SIGN IN WITH COMPULSORY NAME & MOBILE PHONE NUMBER */}
               {activeTab === "signin" && (
                 <form onSubmit={handleSignInSubmit} className="space-y-4">
-                  <h1 className="text-[28px] font-normal text-[#0f1111] leading-tight mb-2">
-                    Sign in
-                  </h1>
+                  <div>
+                    <h1 className="text-[28px] font-normal text-[#0f1111] leading-tight mb-1">
+                      Sign in
+                    </h1>
+                    <p className="text-xs text-stone-500">
+                      Please enter your name and 10-digit mobile number to continue.
+                    </p>
+                  </div>
 
-                  {/* Primary ID Input */}
+                  {/* 1. Compulsory Name Input */}
                   <div>
                     <label
-                      htmlFor="signin-id"
+                      htmlFor="signin-name"
                       className="block text-[13px] font-bold text-[#0f1111] mb-1"
                     >
-                      Email or mobile phone number
+                      Your name <span className="text-[#c40000] font-bold">*</span>
                     </label>
                     <div className="relative flex items-center">
                       <input
-                        id="signin-id"
+                        id="signin-name"
                         type="text"
-                        value={identifier}
+                        value={name}
                         onChange={(e) => {
-                          setIdentifier(e.target.value);
+                          setName(e.target.value);
                           if (error) setError(null);
                         }}
-                        placeholder=""
+                        placeholder="First and last name"
                         autoFocus
                         required
-                        className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
+                        className="w-full px-2.5 py-2 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all pr-8"
                       />
                       <div className="absolute right-2.5 pointer-events-none text-stone-400">
-                        {identifier.includes("@") ? (
-                          <Mail className="w-4 h-4 text-stone-400" />
-                        ) : (
-                          <Phone className="w-4 h-4 text-stone-400" />
-                        )}
+                        <UserIcon className="w-4 h-4 text-stone-400" />
                       </div>
                     </div>
+                  </div>
+
+                  {/* 2. Compulsory Mobile Number Input */}
+                  <div>
+                    <label
+                      htmlFor="signin-phone"
+                      className="block text-[13px] font-bold text-[#0f1111] mb-1"
+                    >
+                      Mobile number <span className="text-[#c40000] font-bold">*</span>
+                    </label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-2.5 pointer-events-none text-xs font-bold text-stone-600 border-r border-stone-300 pr-2 flex items-center gap-1">
+                        <span>🇮🇳</span>
+                        <span>+91</span>
+                      </div>
+                      <input
+                        id="signin-phone"
+                        type="tel"
+                        maxLength={10}
+                        value={phone}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          setPhone(digits);
+                          if (error) setError(null);
+                        }}
+                        placeholder="10-digit mobile number"
+                        required
+                        className="w-full pl-16 pr-8 py-2 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all font-medium"
+                      />
+                      <div className="absolute right-2.5 pointer-events-none text-stone-400">
+                        <Phone className="w-4 h-4 text-stone-400" />
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-stone-500 mt-1">
+                      We will connect your bag orders and WhatsApp chat using this number.
+                    </p>
                   </div>
 
                   {/* Primary Signature Button (Amazon Yellow Button) */}
@@ -456,7 +550,7 @@ function SignInContent() {
                       htmlFor="reg-name"
                       className="block text-[13px] font-bold text-[#0f1111] mb-1"
                     >
-                      Your name
+                      Your name <span className="text-[#c40000] font-bold">*</span>
                     </label>
                     <input
                       id="reg-name"
@@ -466,27 +560,37 @@ function SignInContent() {
                       placeholder="First and last name"
                       autoFocus
                       required
-                      className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
+                      className="w-full px-2.5 py-2 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
                     />
                   </div>
 
-                  {/* ID Input */}
+                  {/* Mobile Number Input */}
                   <div>
                     <label
                       htmlFor="reg-id"
                       className="block text-[13px] font-bold text-[#0f1111] mb-1"
                     >
-                      Mobile number or email
+                      Mobile number <span className="text-[#c40000] font-bold">*</span>
                     </label>
-                    <input
-                      id="reg-id"
-                      type="text"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="e.g. 9876543210 or yourname@gmail.com"
-                      required
-                      className="w-full px-2.5 py-1.5 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all"
-                    />
+                    <div className="relative flex items-center">
+                      <div className="absolute left-2.5 pointer-events-none text-xs font-bold text-stone-600 border-r border-stone-300 pr-2 flex items-center gap-1">
+                        <span>🇮🇳</span>
+                        <span>+91</span>
+                      </div>
+                      <input
+                        id="reg-id"
+                        type="tel"
+                        maxLength={10}
+                        value={identifier}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          setIdentifier(digits);
+                        }}
+                        placeholder="10-digit mobile number"
+                        required
+                        className="w-full pl-16 pr-8 py-2 bg-white text-[#0f1111] text-sm rounded-[4px] border border-[#888c8c] focus:outline-none focus:border-[#e77600] focus:ring-2 focus:ring-[#f3a847]/40 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-all font-medium"
+                      />
+                    </div>
                   </div>
 
                   {/* Password Input with Verification */}
