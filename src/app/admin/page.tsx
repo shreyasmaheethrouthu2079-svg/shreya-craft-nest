@@ -27,6 +27,10 @@ import {
   Sparkles,
   ArrowLeft,
   ShoppingBag,
+  Users,
+  UserCheck,
+  Mail,
+  FileSpreadsheet,
 } from "lucide-react";
 
 interface CustomerInfo {
@@ -69,6 +73,19 @@ interface AdminStats {
   packed: number;
   dispatched: number;
   delivered: number;
+}
+
+interface AdminCustomer {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  lastLogin: string;
+  loginCount: number;
+  type: string;
+  ordersCount: number;
+  totalSpent: number;
+  address?: string;
 }
 
 const STATUS_LABELS: Record<AdminOrder["status"], { label: string; color: string; icon: string }> = {
@@ -120,6 +137,12 @@ export default function AdminPage() {
   // Printable Modal State
   const [printOrder, setPrintOrder] = useState<AdminOrder | null>(null);
 
+  // Main Tab Navigation: "orders" | "customers"
+  const [activeMainTab, setActiveMainTab] = useState<"orders" | "customers">("orders");
+  const [customersList, setCustomersList] = useState<AdminCustomer[]>([]);
+  const [isCustomersLoading, setIsCustomersLoading] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+
   // Check saved authentication on mount
   useEffect(() => {
     try {
@@ -132,6 +155,101 @@ export default function AdminPage() {
     }
   }, []);
 
+  // Fetch customers (Server + LocalStorage + Orders)
+  const fetchCustomers = async (existingOrders?: AdminOrder[]) => {
+    setIsCustomersLoading(true);
+    try {
+      const res = await fetch("/api/admin/customers");
+      const data = await res.json();
+      const serverCustomers = data.customers || [];
+
+      let localAccounts: any[] = [];
+      try {
+        const raw = localStorage.getItem("scn_registered_accounts");
+        if (raw) localAccounts = JSON.parse(raw);
+      } catch {}
+
+      const map = new Map<string, AdminCustomer>();
+
+      // 1. Process server-recorded logins
+      serverCustomers.forEach((c: any) => {
+        const key = (c.identifier || c.phone || c.email || c.id).toLowerCase();
+        map.set(key, {
+          id: c.id,
+          name: c.name || "Customer",
+          phone: c.phone || "",
+          email: c.email || "",
+          lastLogin: c.lastLogin || new Date().toISOString(),
+          loginCount: c.loginCount || 1,
+          type: c.type || "signin",
+          ordersCount: 0,
+          totalSpent: 0,
+        });
+      });
+
+      // 2. Process local registered accounts
+      localAccounts.forEach((acc: any) => {
+        const key = (acc.identifier || acc.phone || acc.email || acc.id).toLowerCase();
+        if (map.has(key)) {
+          const existing = map.get(key)!;
+          map.set(key, {
+            ...existing,
+            name: existing.name !== "Customer" ? existing.name : (acc.name || "Customer"),
+            phone: existing.phone || acc.phone || (!acc.identifier?.includes("@") ? acc.identifier : ""),
+            email: existing.email || acc.email || (acc.identifier?.includes("@") ? acc.identifier : ""),
+          });
+        } else {
+          map.set(key, {
+            id: acc.id || `LOCAL-${Math.random().toString(36).slice(2, 7)}`,
+            name: acc.name || "Customer",
+            phone: acc.phone || (!acc.identifier?.includes("@") ? acc.identifier : ""),
+            email: acc.email || (acc.identifier?.includes("@") ? acc.identifier : ""),
+            lastLogin: acc.createdAt || new Date().toISOString(),
+            loginCount: 1,
+            type: "signup",
+            ordersCount: 0,
+            totalSpent: 0,
+          });
+        }
+      });
+
+      // 3. Process orders to add order count and address info
+      const ordersToUse = existingOrders || orders;
+      ordersToUse.forEach((o) => {
+        const cleanPhone = o.customer.phone?.replace(/\D/g, "").slice(-10);
+        const name = o.customer.fullName;
+        const key = cleanPhone ? cleanPhone.toLowerCase() : name.toLowerCase();
+
+        if (map.has(key)) {
+          const item = map.get(key)!;
+          item.ordersCount = (item.ordersCount || 0) + 1;
+          item.totalSpent = (item.totalSpent || 0) + (o.totalAmountPaid || 0);
+          item.address = `${o.customer.address}, ${o.customer.city} - ${o.customer.pincode}`;
+          if (!item.phone && cleanPhone) item.phone = cleanPhone;
+        } else {
+          map.set(key, {
+            id: `ORD-${cleanPhone || Math.random().toString(36).slice(2, 7)}`,
+            name: name,
+            phone: cleanPhone,
+            email: "",
+            lastLogin: o.createdAt,
+            loginCount: 1,
+            type: "order",
+            ordersCount: 1,
+            totalSpent: o.totalAmountPaid || 0,
+            address: `${o.customer.address}, ${o.customer.city} - ${o.customer.pincode}`,
+          });
+        }
+      });
+
+      setCustomersList(Array.from(map.values()));
+    } catch (err) {
+      console.error("Failed to load customers:", err);
+    } finally {
+      setIsCustomersLoading(false);
+    }
+  };
+
   // Fetch orders
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -141,6 +259,9 @@ export default function AdminPage() {
       if (data.success) {
         setOrders(data.orders || []);
         if (data.stats) setStats(data.stats);
+
+        // Also refresh customers list using latest orders
+        fetchCustomers(data.orders || []);
 
         // Initialize drafts
         const newDrafts: Record<string, any> = {};
@@ -259,6 +380,19 @@ export default function AdminPage() {
       return true;
     });
   }, [orders, statusFilter, searchQuery]);
+
+  // Filtered Customers
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearch.trim()) return customersList;
+    const q = customerSearch.toLowerCase().trim();
+    return customersList.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        (c.phone && c.phone.includes(q)) ||
+        (c.email && c.email.toLowerCase().includes(q)) ||
+        (c.address && c.address.toLowerCase().includes(q))
+    );
+  }, [customersList, customerSearch]);
 
   // =========================================================================
   // SCREEN 1: PIN AUTHENTICATION GATE
@@ -404,8 +538,275 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
-        {/* STATS OVERVIEW CARDS */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
+        {/* Navigation Mode Switcher: Orders vs Customers & Live Google Sheet */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-stone-200/90 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveMainTab("orders")}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                activeMainTab === "orders"
+                  ? "bg-amber-800 text-white shadow-2xs"
+                  : "bg-stone-50 text-stone-600 hover:bg-stone-100"
+              }`}
+            >
+              <Package className="w-4 h-4" />
+              <span>Customer Orders ({orders.length})</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveMainTab("customers");
+                fetchCustomers();
+              }}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                activeMainTab === "customers"
+                  ? "bg-amber-800 text-white shadow-2xs"
+                  : "bg-stone-50 text-stone-600 hover:bg-stone-100"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Customers & Logins ({customersList.length})</span>
+            </button>
+          </div>
+
+          <a
+            href="https://docs.google.com/spreadsheets/u/0/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1.5 transition-colors shadow-2xs"
+            title="Open your Google Sheet titled 'Shreya Craft Nest' in a new tab"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
+            <span>Open Google Sheet Live Sync ↗</span>
+          </a>
+        </div>
+
+        {activeMainTab === "customers" ? (
+          /* ========================================================
+             CUSTOMERS & LOGINS SECTION
+             ======================================================== */
+          <div className="space-y-6">
+            {/* Customer Stats Cards */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs space-y-1">
+                <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
+                  Total Customer Contacts
+                </span>
+                <div className="font-serif text-2xl font-bold text-amber-950 flex items-center gap-2">
+                  <Users className="w-6 h-6 text-amber-800" />
+                  <span>{customersList.length}</span>
+                </div>
+                <p className="text-[10px] text-stone-500">Registered members & shoppers</p>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-emerald-200/90 p-4 shadow-2xs space-y-1 bg-emerald-50/30">
+                <span className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">
+                  WhatsApp Direct Contacts
+                </span>
+                <div className="font-serif text-2xl font-bold text-emerald-950 flex items-center gap-2">
+                  <MessageCircle className="w-6 h-6 text-emerald-700" />
+                  <span>{customersList.filter((c) => c.phone).length}</span>
+                </div>
+                <p className="text-[10px] text-emerald-700">1-click WhatsApp ready</p>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs space-y-1">
+                <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
+                  Registered Accounts
+                </span>
+                <div className="font-serif text-2xl font-bold text-stone-900 flex items-center gap-2">
+                  <UserCheck className="w-6 h-6 text-stone-700" />
+                  <span>{customersList.filter((c) => c.type === "signup").length}</span>
+                </div>
+                <p className="text-[10px] text-stone-500">Created Shreya Craft Nest accounts</p>
+              </div>
+            </section>
+
+            {/* Customers Search & Action Bar */}
+            <div className="bg-white p-4 rounded-2xl border border-stone-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  placeholder="Search by customer name, phone, email, or city..."
+                  className="w-full pl-9 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all shadow-inner"
+                />
+                {customerSearch && (
+                  <button
+                    onClick={() => setCustomerSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="text-xs text-stone-500 font-medium">
+                Showing <strong className="text-stone-900 font-bold">{filteredCustomers.length}</strong> of{" "}
+                {customersList.length} customers
+              </div>
+            </div>
+
+            {/* Customers List */}
+            {isCustomersLoading ? (
+              <div className="py-20 text-center space-y-3">
+                <div className="w-8 h-8 border-3 border-amber-800 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-stone-500 font-medium">Loading customer accounts...</p>
+              </div>
+            ) : filteredCustomers.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-stone-200 p-12 text-center max-w-md mx-auto space-y-3">
+                <Users className="w-10 h-10 text-stone-400 mx-auto" />
+                <h3 className="font-serif text-lg font-bold text-stone-800">No Customers Found</h3>
+                <p className="text-xs text-stone-500">
+                  {customerSearch
+                    ? "No customer matches your search query."
+                    : "When customers log in or place orders, they will appear here automatically."}
+                </p>
+                {customerSearch && (
+                  <button
+                    onClick={() => setCustomerSearch("")}
+                    className="text-xs text-amber-800 font-bold hover:underline"
+                  >
+                    Clear search query
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredCustomers.map((cust) => {
+                  const cleanPhone = cust.phone ? cust.phone.replace(/\D/g, "").slice(-10) : "";
+                  const initials = cust.name
+                    ? cust.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase()
+                    : "SC";
+
+                  const waChatUrl = cleanPhone
+                    ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(
+                        `Namaste ${cust.name}! This is Sudha Rani from Shreya Craft Nest. How can I help you today?`
+                      )}`
+                    : null;
+
+                  return (
+                    <article
+                      key={cust.id}
+                      className="bg-white rounded-3xl border border-stone-200/90 shadow-2xs p-5 space-y-4 hover:border-amber-300 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-900 border border-amber-300 font-serif font-bold text-sm flex items-center justify-center shadow-2xs flex-shrink-0">
+                            {initials}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-stone-900 text-sm sm:text-base leading-snug">
+                              {cust.name}
+                            </h3>
+                            <p className="text-[11px] text-stone-500 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-stone-400" />
+                              <span>
+                                Last active:{" "}
+                                {new Date(cust.lastLogin).toLocaleString("en-IN", {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                })}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                            cust.type === "signup"
+                              ? "bg-purple-100 text-purple-900 border-purple-300"
+                              : cust.ordersCount > 0
+                              ? "bg-amber-100 text-amber-900 border-amber-300"
+                              : "bg-stone-100 text-stone-700 border-stone-200"
+                          }`}
+                        >
+                          {cust.type === "signup"
+                            ? "✨ Member"
+                            : cust.ordersCount > 0
+                            ? `🛍️ ${cust.ordersCount} Order${cust.ordersCount > 1 ? "s" : ""}`
+                            : "📱 Visitor"}
+                        </span>
+                      </div>
+
+                      {/* Contact Details */}
+                      <div className="space-y-2 pt-1 border-t border-stone-100 text-xs">
+                        {cust.phone && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-stone-500 flex items-center gap-1.5">
+                              <Phone className="w-3.5 h-3.5 text-stone-400" />
+                              <span className="font-mono font-semibold text-stone-800">
+                                +91 {cust.phone}
+                              </span>
+                            </span>
+                            {waChatUrl && (
+                              <a
+                                href={waChatUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
+                              >
+                                <MessageCircle className="w-3 h-3 text-emerald-700" />
+                                <span>Chat</span>
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {cust.email && (
+                          <div className="flex items-center gap-1.5 text-stone-600">
+                            <Mail className="w-3.5 h-3.5 text-stone-400" />
+                            <a
+                              href={`mailto:${cust.email}`}
+                              className="hover:underline text-stone-800"
+                            >
+                              {cust.email}
+                            </a>
+                          </div>
+                        )}
+
+                        {cust.address && (
+                          <div className="flex items-start gap-1.5 text-stone-600 pt-1">
+                            <MapPin className="w-3.5 h-3.5 text-stone-400 mt-0.5 flex-shrink-0" />
+                            <span className="text-[11px] leading-relaxed text-stone-700">
+                              {cust.address}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer Badge / Summary */}
+                      <div className="pt-2 border-t border-dashed border-stone-200 flex items-center justify-between text-[11px] text-stone-500">
+                        <span>
+                          Total visits / logins:{" "}
+                          <strong className="text-stone-800">{cust.loginCount}</strong>
+                        </span>
+                        {cust.totalSpent > 0 && (
+                          <span className="font-bold text-amber-950 font-serif">
+                            Total: ₹{cust.totalSpent}
+                          </span>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ========================================================
+             ORDERS SECTION
+             ======================================================== */
+          <>
+            {/* STATS OVERVIEW CARDS */}
         <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {/* Revenue */}
           <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-2xs space-y-1">
@@ -805,6 +1206,8 @@ export default function AdminPage() {
             })
           )}
         </section>
+          </>
+        )}
       </main>
 
       {/* =========================================================================

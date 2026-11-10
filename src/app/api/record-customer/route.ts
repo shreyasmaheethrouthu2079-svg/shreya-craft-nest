@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordCustomerActivity } from "@/data/customersStore";
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +17,14 @@ export async function POST(request: Request) {
     const isEmail = cleanId.includes("@");
     const cleanPhone = cleanId.replace(/\D/g, "");
 
+    // 1. Record customer activity in local studio store
+    const customer = recordCustomerActivity(
+      name ? String(name).trim() : "",
+      cleanId,
+      type === "signup" ? "signup" : "signin"
+    );
+
+    // 2. Dispatch to Google Sheets
     const webhookUrl =
       process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
       "https://script.google.com/macros/s/AKfycbygzrIq4_95S907coV6TMCi5_nqg3Y2jpP_WNVpFswfK53aropBugBBzsh1AgY9i4Yr/exec";
@@ -34,9 +43,9 @@ export async function POST(request: Request) {
             orderId: type === "signup" ? "NEW-MEMBER" : "MEMBER-LOGIN",
             paymentId: type === "signup" ? "NEW_ACCOUNT_CREATED" : "CUSTOMER_ACTIVE",
             paymentMethod: "Online Account",
-            customerName: name ? String(name).trim() : (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4)}`),
-            phoneNumber: !isEmail && cleanPhone ? cleanPhone : "",
-            deliveryAddress: isEmail ? `Email: ${cleanId}` : `Mobile User: +91 ${cleanPhone}`,
+            customerName: customer.name,
+            phoneNumber: customer.phone || "",
+            deliveryAddress: customer.email ? `Email: ${customer.email}` : `Mobile User: +91 ${customer.phone}`,
             productName:
               type === "signup"
                 ? "Created Shreya Craft Nest Account"
@@ -54,6 +63,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Customer recorded successfully",
+      customer,
     });
   } catch (error: any) {
     console.error("Error in /api/record-customer:", error);
