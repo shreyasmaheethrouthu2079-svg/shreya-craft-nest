@@ -122,6 +122,18 @@ function SignInContent() {
       const displayName =
         registeredName ||
         (isEmail ? cleanId.split("@")[0] : `Customer ${cleanPhone.slice(-4) || ""}`);
+
+      // Sync customer sign in to Google Sheets in background
+      fetch("/api/record-customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: displayName,
+          identifier: cleanId,
+          type: "signin",
+        }),
+      }).catch(() => {});
+
       finishLogin(displayName);
     } catch (err) {
       console.error(err);
@@ -160,6 +172,18 @@ function SignInContent() {
         setIsSubmitting(false);
         return;
       }
+
+      // Sync customer registration to Google Sheets in background
+      fetch("/api/record-customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          identifier: identifier.trim(),
+          type: "signup",
+        }),
+      }).catch(() => {});
+
       finishLogin(name.trim());
     } catch (err) {
       console.error(err);

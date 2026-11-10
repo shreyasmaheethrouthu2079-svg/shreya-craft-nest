@@ -152,13 +152,19 @@ export async function POST(request: Request) {
     console.log("=== NEW VERIFIED ORDER PLACED (NO WHATSAPP REQUIRED) ===");
     console.log(JSON.stringify(orderRecord, null, 2));
 
-    // Optional Google Sheets Webhook Integration
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+    // Google Sheets Webhook Integration
+    const webhookUrl =
+      process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
+      "https://script.google.com/macros/s/AKfycbygzrIq4_95S907coV6TMCi5_nqg3Y2jpP_WNVpFswfK53aropBugBBzsh1AgY9i4Yr/exec";
     let sheetSyncStatus = "not_configured";
 
     const itemsSummary = orderItems
       .map((item) => `${item.name} (Qty: ${item.quantity})`)
       .join(", ");
+
+    const categoriesSummary = Array.from(
+      new Set(orderItems.map((item) => item.category).filter(Boolean))
+    ).join(", ") || "Handcrafted";
 
     if (webhookUrl && !webhookUrl.includes("YOUR_")) {
       try {
@@ -176,6 +182,7 @@ export async function POST(request: Request) {
             phoneNumber: orderRecord.customer.phone,
             deliveryAddress: `${orderRecord.customer.address}, ${orderRecord.customer.city} - ${orderRecord.customer.pincode}`,
             productName: itemsSummary,
+            category: categoriesSummary,
             totalAmount: orderRecord.totalAmountPaid,
             paymentStatus: orderRecord.paymentStatus,
           }),
