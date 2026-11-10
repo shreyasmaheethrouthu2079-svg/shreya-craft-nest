@@ -12,6 +12,7 @@ import { CategoryType } from "@/data/products";
 import {
   ShoppingCart,
   ChevronDown,
+  ChevronRight,
   Check,
   LogOut,
   User,
@@ -549,7 +550,7 @@ export function Navbar() {
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium cursor-pointer text-left"
                 >
                   <span>👜 Handbags</span>
-                  <span className="text-stone-500 font-semibold">₹400</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
                 </button>
                 <button
                   type="button"
@@ -557,7 +558,7 @@ export function Navbar() {
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium cursor-pointer text-left"
                 >
                   <span>👛 Mini Bags</span>
-                  <span className="text-stone-500 font-semibold">₹140</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
                 </button>
                 <button
                   type="button"
@@ -565,7 +566,7 @@ export function Navbar() {
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium cursor-pointer text-left"
                 >
                   <span>👝 Pouches</span>
-                  <span className="text-stone-500 font-semibold">₹100</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
                 </button>
               </div>
             </div>
