@@ -102,21 +102,28 @@ export async function POST(request: Request) {
       razorpay_order_id ||
       `SCN-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
 
+    // Determine clean payment method (WhatsApp & Direct UPI with Sudha Rani)
+    let cleanPaymentMethod = "WhatsApp & UPI QR";
+    if (paymentMethod === "COD") {
+      cleanPaymentMethod = "Cash on Delivery (Pay upon delivery)";
+    } else if (
+      typeof paymentMethod === "string" &&
+      paymentMethod.trim() &&
+      !paymentMethod.toLowerCase().includes("razorpay")
+    ) {
+      cleanPaymentMethod = paymentMethod.trim();
+    }
+
     const orderRecord = {
       orderId: generatedOrderId,
       paymentId:
         razorpay_payment_id ||
-        (upiRefId ? `UPI-REF-${upiRefId}` : `COD-${Date.now()}`),
-      paymentMethod:
-        paymentMethod === "COD"
-          ? "Cash on Delivery (Pay upon delivery)"
-          : paymentMethod === "UPI"
-          ? "Direct UPI / QR Code"
-          : "Online Cards / Razorpay",
+        (upiRefId ? `UPI-REF-${upiRefId}` : `WA-QR-${generatedOrderId}`),
+      paymentMethod: cleanPaymentMethod,
       paymentStatus:
         paymentMethod === "COD"
           ? "PENDING_CASH_ON_DELIVERY"
-          : "CONFIRMED_PAID",
+          : "PENDING_UPI_PAYMENT",
       verified: isSignatureValid,
       customer: {
         fullName: customer.fullName.trim(),

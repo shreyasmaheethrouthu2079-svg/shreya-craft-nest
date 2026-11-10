@@ -118,11 +118,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${serifFont.variable} ${sansFont.variable}`}>
       <head>
-        {/* Load Razorpay Standard Checkout SDK */}
-        <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="afterInteractive"
-        />
         {/* Google Translate Integration for Complete Page Translation */}
         <Script id="google-translate-init" strategy="afterInteractive">
           {`
