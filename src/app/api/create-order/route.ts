@@ -79,7 +79,7 @@ export async function POST(request: Request) {
           currency: "INR",
           receipt: `scn_${Date.now()}`,
           notes: {
-            brand: "Shreya Craft Nest",
+            brand: "Shreya's Craft Nest",
             itemsCount: orderItems.length.toString(),
             summary: orderItems.map((i) => `${i.name} (x${i.quantity})`).join(", "),
           },
