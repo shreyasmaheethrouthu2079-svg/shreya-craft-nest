@@ -155,16 +155,21 @@ function SignInContent() {
         localStorage.setItem("scn_registered_accounts", JSON.stringify(accounts));
       } catch (e) {}
 
-      // Sync customer sign in to Google Sheets in background
-      fetch("/api/record-customer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: cleanName,
-          identifier: cleanPhone,
-          type: "signin",
-        }),
-      }).catch(() => {});
+      // Sync customer sign in to Google Sheets and await it with keepalive
+      try {
+        await fetch("/api/record-customer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify({
+            name: cleanName,
+            identifier: cleanPhone,
+            type: "signin",
+          }),
+        });
+      } catch (e) {
+        console.warn("Could not sync customer login to Google Sheets:", e);
+      }
 
       finishLogin(cleanName);
     } catch (err) {
@@ -230,16 +235,21 @@ function SignInContent() {
         );
       } catch (e) {}
 
-      // Sync customer registration to Google Sheets in background
-      fetch("/api/record-customer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: cleanName,
-          identifier: cleanId,
-          type: "signup",
-        }),
-      }).catch(() => {});
+      // Sync customer registration to Google Sheets and await it with keepalive
+      try {
+        await fetch("/api/record-customer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify({
+            name: cleanName,
+            identifier: cleanId,
+            type: "signup",
+          }),
+        });
+      } catch (e) {
+        console.warn("Could not sync customer registration to Google Sheets:", e);
+      }
 
       finishLogin(cleanName);
     } catch (err) {
@@ -286,9 +296,21 @@ function SignInContent() {
   };
 
   // 4. Handle Guest Login
-  const handleGuestLogin = () => {
+  const handleGuestLogin = async () => {
     setIsSubmitting(true);
     loginAsGuest();
+    try {
+      await fetch("/api/record-customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          name: "Guest Explorer",
+          identifier: `guest-${Date.now().toString().slice(-4)}`,
+          type: "signin",
+        }),
+      });
+    } catch {}
     finishLogin("Guest Customer");
   };
 

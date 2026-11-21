@@ -24,6 +24,15 @@ export async function POST(request: Request) {
       type === "signup" ? "signup" : "signin"
     );
 
+    const effectiveName =
+      name && String(name).trim()
+        ? String(name).trim()
+        : customer.name || "Customer";
+    const effectivePhone =
+      cleanPhone && cleanPhone.length >= 10
+        ? cleanPhone.slice(-10)
+        : customer.phone || cleanPhone || "";
+
     // 2. Dispatch to Google Sheets
     const webhookUrl =
       process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
@@ -31,30 +40,39 @@ export async function POST(request: Request) {
 
     if (webhookUrl && !webhookUrl.includes("YOUR_")) {
       try {
-        await fetch(webhookUrl, {
+        const payload = {
+          timestamp: new Date().toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          }),
+          orderId:
+            type === "signup"
+              ? `MEMBER-${Date.now().toString().slice(-6)}`
+              : `LOGIN-${Date.now().toString().slice(-6)}`,
+          paymentId:
+            type === "signup" ? "ACCOUNT_CREATED" : "CUSTOMER_ACTIVE",
+          paymentMethod: "Customer Login",
+          customerName: effectiveName,
+          phoneNumber: effectivePhone,
+          deliveryAddress: customer.email
+            ? `Email: ${customer.email}`
+            : `Mobile Customer: +91 ${effectivePhone}`,
+          productName:
+            type === "signup"
+              ? "Created Shreya's Craft Nest Account"
+              : "Customer Signed In",
+          category: "Customer Profile",
+          totalAmount: 0,
+          paymentStatus: "LOGGED_IN",
+        };
+
+        const res = await fetch(webhookUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            timestamp: new Date().toLocaleString("en-IN", {
-              timeZone: "Asia/Kolkata",
-            }),
-            orderId: type === "signup" ? "NEW-MEMBER" : "MEMBER-LOGIN",
-            paymentId: type === "signup" ? "NEW_ACCOUNT_CREATED" : "CUSTOMER_ACTIVE",
-            paymentMethod: "Online Account",
-            customerName: customer.name,
-            phoneNumber: customer.phone || "",
-            deliveryAddress: customer.email ? `Email: ${customer.email}` : `Mobile User: +91 ${customer.phone}`,
-            productName:
-              type === "signup"
-                ? "Created Shreya's Craft Nest Account"
-                : "Customer Sign In",
-            category: "Customer Profile",
-            totalAmount: 0,
-            paymentStatus: "ACTIVE",
-          }),
+          body: JSON.stringify(payload),
         });
+        console.log("Customer login synced to Google Sheets. HTTP status:", res.status);
       } catch (err: any) {
         console.error("Failed to sync customer to Google Sheets:", err.message);
       }
