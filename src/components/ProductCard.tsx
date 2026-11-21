@@ -12,7 +12,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, updateQuantity, getItemQuantity } = useCart();
+  const { addToCart, updateQuantity, getItemQuantity, openCart } = useCart();
   const { t } = useLanguage();
   const cartQuantity = getItemQuantity(product.id);
 
@@ -108,49 +108,74 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Card Footer with Price, Add to Cart & Buy Now */}
-      <div className="p-5 sm:p-6 pt-0 border-t border-stone-100 mt-2">
-        <div className="flex items-center justify-between pt-4">
-          <div>
-            <div className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
-              {t("catalog.price")}
+      <div className="p-4 sm:p-5 pt-0 border-t border-stone-100 mt-2">
+        <div className="pt-3.5 space-y-3">
+          {/* Price & Cart Status */}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">
+                {t("catalog.price")}
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-serif text-2xl font-bold text-stone-900">
+                  ₹{product.price}
+                </span>
+              </div>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-serif text-2xl font-bold text-stone-900">
-                ₹{product.price}
-              </span>
-              <span className="text-xs text-stone-400 line-through">
-                ₹{product.originalPrice}
-              </span>
-            </div>
+
+            {cartQuantity > 0 && (
+              <button
+                type="button"
+                onClick={openCart}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title="Open Shopping Cart"
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-amber-800" />
+                <span>{cartQuantity} in Cart</span>
+                <span className="text-[10px] text-amber-700 underline font-semibold ml-0.5">View ▸</span>
+              </button>
+            )}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Action Buttons: Add to Cart + Buy Now */}
+          <div className="grid grid-cols-2 gap-2">
             {cartQuantity === 0 ? (
               <button
-                onClick={() => addToCart(product)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold text-xs sm:text-sm transition-all shadow-xs hover:shadow active:scale-95 cursor-pointer group/btn"
-                title="Add to Shopping Cart"
+                type="button"
+                onClick={() => addToCart(product, 1, { openDrawer: true })}
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-950 font-bold text-xs sm:text-sm transition-all shadow-2xs cursor-pointer group/btn"
+                title={`Add ${product.name} to Shopping Cart`}
                 aria-label={`Add ${product.name} to Cart`}
               >
-                <ShoppingBag className="w-4 h-4 text-amber-800 group-hover/btn:scale-110 transition-transform" />
-                <span className="hidden xs:inline">{t("catalog.addToCart")}</span>
+                <ShoppingBag className="w-4 h-4 text-amber-800 group-hover/btn:scale-110 transition-transform flex-shrink-0" />
+                <span>{t("catalog.addToCart")}</span>
               </button>
             ) : (
-              <div className="inline-flex items-center border border-emerald-600 bg-emerald-50 rounded-xl overflow-hidden shadow-xs">
+              <div className="inline-flex items-center justify-between border-2 border-emerald-600 bg-emerald-50 rounded-xl overflow-hidden shadow-2xs py-1 px-1.5">
                 <button
+                  type="button"
                   onClick={() => updateQuantity(product.id, cartQuantity - 1)}
-                  className="px-2 py-1.5 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer"
                   title="Decrease quantity"
                   aria-label="Decrease quantity"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="px-1.5 text-xs font-bold text-emerald-950 select-none">
-                  {cartQuantity}
-                </span>
                 <button
-                  onClick={() => updateQuantity(product.id, cartQuantity + 1)}
-                  className="px-2 py-1.5 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer"
+                  type="button"
+                  onClick={openCart}
+                  className="flex items-center gap-1 text-xs font-bold text-emerald-950 hover:underline cursor-pointer px-1"
+                  title="Open Cart"
+                >
+                  <span>{cartQuantity} in Cart</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateQuantity(product.id, cartQuantity + 1);
+                    openCart();
+                  }}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer"
                   title="Increase quantity"
                   aria-label="Increase quantity"
                 >
@@ -161,11 +186,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
             <Link
               href={`/checkout?productId=${product.id}`}
-              className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] active:scale-95 text-white font-bold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex-1 cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] active:scale-95 text-white font-bold text-xs sm:text-sm px-2.5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center"
               title={`Order ${product.name} with delivery address via WhatsApp`}
             >
-              <MessageCircle className="w-4 h-4 fill-white" />
-              <span>Order on WhatsApp</span>
+              <MessageCircle className="w-4 h-4 fill-white flex-shrink-0" />
+              <span>Order Now</span>
             </Link>
           </div>
         </div>

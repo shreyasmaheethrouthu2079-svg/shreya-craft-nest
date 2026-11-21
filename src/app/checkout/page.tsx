@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Lock,
   ArrowLeft,
+  ArrowRight,
   Sparkles,
   Clock,
   HeartHandshake,
@@ -56,9 +57,9 @@ function CheckoutContent() {
   useEffect(() => {
     if (rawProductId) {
       const found = getProductById(rawProductId);
-      if (found) {
-        setSingleProduct(found);
-      }
+      setSingleProduct(found);
+    } else {
+      setSingleProduct(undefined);
     }
   }, [rawProductId]);
 
@@ -353,6 +354,36 @@ function CheckoutContent() {
               <span>Print Receipt</span>
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ========================================================
+  // EMPTY CART CHECK
+  // ========================================================
+  if (checkoutItems.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
+        <div className="bg-white rounded-3xl border border-[#EDE6DD] p-8 sm:p-12 shadow-sm space-y-6">
+          <div className="w-16 h-16 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center mx-auto text-amber-800">
+            <ShoppingBag className="w-8 h-8 text-amber-700" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+              Your Cart is Empty
+            </h1>
+            <p className="text-sm text-stone-600 max-w-md mx-auto">
+              Please choose any authentic handcrafted bag or pouch from our artisan collection before proceeding to checkout.
+            </p>
+          </div>
+          <Link
+            href="/#catalog"
+            className="inline-flex items-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-bold text-sm px-6 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all"
+          >
+            <span>Explore Handcrafted Bags</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     );
